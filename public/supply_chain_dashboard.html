@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Supply Chain Analytics Lab</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #e0ddd8;
+    --paper: #0d0f14;
+    --accent: #e8440a;
+    --accent2: #4a8fff;
+    --accent3: #00c896;
+    --accent4: #f5a623;
+    --muted: #7a7a7a;
+    --card: #16181f;
+    --border: #2a2d36;
+    --mono: 'Space Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: #0a0c10;
+    color: #e0ddd8;
+    padding: 24px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 3px solid var(--accent);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  header h1 {
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  .badge {
+    font-family: var(--mono);
+    font-size: 11px;
+    background: var(--accent);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 2px;
+    letter-spacing: 1px;
+  }
+
+  /* ── NAV ── */
+  nav {
+    background: #0a0c10;
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid #2a2d36;
+    overflow-x: auto;
+  }
+
+  .nav-btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 14px 24px;
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+  }
+
+  .nav-btn:hover { color: #e0ddd8; }
+
+  .nav-btn.active {
+    color: #e0ddd8;
+    border-bottom-color: var(--accent);
+  }
+
+  .nav-btn span {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background: #2a2d36;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 20px;
+    margin-right: 8px;
+    font-size: 10px;
+  }
+
+  .nav-btn.active span { background: var(--accent); color: #fff; }
+
+  /* ── SECTIONS ── */
+  .section { display: none; padding: 40px; }
+  .section.active { display: block; }
+
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-num {
+    font-family: var(--mono);
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--border);
+    line-height: 1;
+    min-width: 60px;
+  }
+
+  .section-title h2 {
+    font-family: var(--mono);
+    font-size: 22px;
+    margin-bottom: 6px;
+  }
+
+  .section-title p {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 600px;
+  }
+
+  .why-tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    background: var(--accent);
+    color: white;
+    padding: 3px 8px;
+    border-radius: 2px;
+    margin-top: 10px;
+  }
+
+  /* ── CONTROLS ── */
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 28px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 20px;
+    border-radius: 4px;
+  }
+
+  .ctrl-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 160px;
+  }
+
+  .ctrl-group label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .ctrl-group select,
+  .ctrl-group input[type="range"] {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    font-family: var(--sans);
+    font-size: 13px;
+    background: var(--paper);
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  .ctrl-group select:focus { outline: 2px solid var(--accent); }
+
+  .range-val {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .run-btn {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: opacity 0.2s;
+    align-self: flex-end;
+  }
+
+  .run-btn:hover { opacity: 0.85; }
+
+  /* ── GRID ── */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+
+  /* ── CHART CARD ── */
+  .chart-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 24px;
+  }
+
+  .chart-card h3 {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    margin-bottom: 16px;
+    color: var(--ink);
+  }
+
+  .chart-card canvas { width: 100% !important; }
+
+  /* ── STATS PANEL ── */
+  .stats-panel {
+    background: #111318;
+    color: #e0ddd8;
+    border-radius: 4px;
+    padding: 24px;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+
+  .stats-panel h3 {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #2a2d36;
+  }
+
+  .stat-row:last-child { border-bottom: none; }
+  .stat-key { color: #888; }
+  .stat-val { color: var(--accent3); font-weight: 700; }
+
+  /* ── PREDICTION BOX ── */
+  .predict-box {
+    background: #111318;
+    color: #e0ddd8;
+    border-left: 4px solid var(--accent3);
+    padding: 24px;
+    border-radius: 0 4px 4px 0;
+    font-family: var(--mono);
+  }
+
+  .predict-box h3 {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--accent3);
+    margin-bottom: 16px;
+  }
+
+  .predict-result {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--accent3);
+    margin: 12px 0;
+  }
+
+  .predict-label { font-size: 11px; color: #888; }
+
+  .formula-box {
+    background: #0d0f14;
+    border: 1px solid #2a2d36;
+    padding: 12px 16px;
+    border-radius: 3px;
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--accent4);
+    letter-spacing: 0.5px;
+  }
+
+  /* ── CLUSTER LEGEND ── */
+  .cluster-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-family: var(--mono);
+  }
+
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+
+  /* ── BOX PLOT SVG ── */
+  .boxplot-svg { width: 100%; height: 320px; }
+
+  /* ── DIST ── */
+  .dist-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .metric-chip {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 14px;
+    border-radius: 4px;
+    text-align: center;
+  }
+
+  .metric-chip .val {
+    font-family: var(--mono);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent2);
+  }
+
+  .metric-chip .key {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+    font-family: var(--mono);
+  }
+
+  /* ── SAMPLING ── */
+  .sample-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-top: 20px;
+  }
+
+  .sample-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 18px;
+  }
+
+  .sample-card h4 {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  .sample-tag-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    max-height: 120px;
+    overflow-y: auto;
+  }
+
+  .sku-tag {
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 2px 5px;
+    border-radius: 2px;
+    background: var(--paper);
+    border: 1px solid var(--border);
+  }
+
+  .sku-tag.selected { background: var(--accent); color: white; border-color: var(--accent); }
+
+  /* ── FULL WIDTH ── */
+  .full { grid-column: 1 / -1; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #0d0f14; }
+  ::-webkit-scrollbar-thumb { background: #3a3d46; border-radius: 3px; }
+
+  @media (max-width: 900px) {
+    .grid2, .grid3, .sample-grid { grid-template-columns: 1fr; }
+    .section { padding: 20px; }
+    header { padding: 16px 20px; }
+    .dist-metrics { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="logo">SCM Lab</span>
+  <h1>Supply Chain Analytics</h1>
+  <span class="badge">100 SKUs · Live</span>
+</header>
+
+<nav>
+  <button class="nav-btn active" onclick="showSection(0)"><span>1</span>Box Plot</button>
+  <button class="nav-btn" onclick="showSection(1)"><span>2</span>Linear Regression</button>
+  <button class="nav-btn" onclick="showSection(2)"><span>3</span>Sampling Techniques</button>
+  <button class="nav-btn" onclick="showSection(3)"><span>4</span>Clustering</button>
+  <button class="nav-btn" onclick="showSection(4)"><span>5</span>Probability Distribution</button>
+</nav>
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- SECTION 1: BOX PLOT -->
+<!-- ════════════════════════════════════════════════ -->
+<section class="section active" id="sec0">
+  <div class="section-header">
+    <div class="section-num">01</div>
+    <div class="section-title">
+      <h2>Box Plot Analysis</h2>
+      <p>Visualize the statistical distribution of key supply chain metrics — median, IQR, whiskers, and outliers — grouped by category, location, or carrier.</p>
+      <span class="why-tag">WHY: Reveals spread, skew, and outliers in cost & quality metrics at a glance</span>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="ctrl-group">
+      <label>Metric</label>
+      <select id="bp-metric" onchange="drawBoxPlots()">
+        <option value="Revenue generated">Revenue Generated</option>
+        <option value="Defect rates">Defect Rates</option>
+        <option value="Shipping costs">Shipping Costs</option>
+        <option value="Manufacturing costs">Manufacturing Costs</option>
+        <option value="Profit_Margin">Profit Margin (%)</option>
+        <option value="Lead times">Lead Times (days)</option>
+        <option value="Costs">Transport Costs</option>
+      </select>
+    </div>
+    <div class="ctrl-group">
+      <label>Group By</label>
+      <select id="bp-group" onchange="drawBoxPlots()">
+        <option value="Product type">Product Type</option>
+        <option value="Location">Location</option>
+        <option value="Shipping carriers">Shipping Carrier</option>
+        <option value="Transportation modes">Transport Mode</option>
+        <option value="Inspection results">Inspection Result</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="chart-card full">
+      <h3>Box Plot — Distribution by Group</h3>
+      <svg class="boxplot-svg" id="boxplot-svg"></svg>
+    </div>
+    <div class="chart-card">
+      <h3>Outlier Table</h3>
+      <div id="outlier-table" style="font-family:var(--mono);font-size:12px;"></div>
+    </div>
+    <div class="stats-panel">
+      <h3>Summary Statistics</h3>
+      <div id="bp-stats"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- SECTION 2: LINEAR REGRESSION -->
+<!-- ════════════════════════════════════════════════ -->
+<section class="section" id="sec1">
+  <div class="section-header">
+    <div class="section-num">02</div>
+    <div class="section-title">
+      <h2>Linear Regression & Prediction</h2>
+      <p>Fit a regression line to any two supply chain variables and use the model to predict outcomes. Includes R², slope, intercept, and confidence metrics.</p>
+      <span class="why-tag">WHY: Quantifies relationships and enables forecasting of revenue, costs, or quality</span>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="ctrl-group">
+      <label>X (Predictor)</label>
+      <select id="lr-x" onchange="runRegression()">
+        <option value="Price">Price</option>
+        <option value="Number of products sold">Units Sold</option>
+        <option value="Defect rates">Defect Rate</option>
+        <option value="Lead times">Lead Times</option>
+        <option value="Manufacturing costs">Manufacturing Cost</option>
+        <option value="Shipping costs">Shipping Cost</option>
+        <option value="Stock levels">Stock Levels</option>
+        <option value="Production volumes">Production Volume</option>
+      </select>
+    </div>
+    <div class="ctrl-group">
+      <label>Y (Target)</label>
+      <select id="lr-y" onchange="runRegression()">
+        <option value="Revenue generated">Revenue Generated</option>
+        <option value="Profit_Margin">Profit Margin (%)</option>
+        <option value="Costs">Transport Costs</option>
+        <option value="Defect rates">Defect Rates</option>
+        <option value="Shipping costs">Shipping Costs</option>
+        <option value="Number of products sold">Units Sold</option>
+      </select>
+    </div>
+    <div class="ctrl-group">
+      <label>Filter: Product Type</label>
+      <select id="lr-filter" onchange="runRegression()">
+        <option value="all">All Products</option>
+        <option value="haircare">Haircare</option>
+        <option value="skincare">Skincare</option>
+        <option value="cosmetics">Cosmetics</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="chart-card">
+      <h3>Scatter Plot + Regression Line</h3>
+      <canvas id="lr-chart" height="300"></canvas>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div class="predict-box">
+        <h3>Prediction Engine</h3>
+        <div class="ctrl-group" style="margin-bottom:12px;">
+          <label style="color:#888;">Enter X Value to Predict</label>
+          <input type="number" id="lr-input" placeholder="e.g. 50" oninput="updatePrediction()"
+            style="background:#0d0f14;border:1px solid #2a2d36;color:#e0ddd8;padding:10px 14px;border-radius:3px;font-family:var(--mono);font-size:14px;width:100%;">
+        </div>
+        <div class="predict-label">Predicted Y Value</div>
+        <div class="predict-result" id="lr-pred">—</div>
+        <div class="formula-box" id="lr-formula">y = m·x + b</div>
+      </div>
+      <div class="stats-panel">
+        <h3>Regression Statistics</h3>
+        <div id="lr-stats"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-card" style="margin-top:24px;">
+    <h3>Residuals Plot</h3>
+    <canvas id="residuals-chart" height="160"></canvas>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- SECTION 3: SAMPLING TECHNIQUES -->
+<!-- ════════════════════════════════════════════════ -->
+<section class="section" id="sec2">
+  <div class="section-header">
+    <div class="section-num">03</div>
+    <div class="section-title">
+      <h2>Sampling Techniques</h2>
+      <p>Compare three sampling strategies — Simple Random, Systematic, and Stratified — applied to the supply chain dataset. See how each sample represents the population.</p>
+      <span class="why-tag">WHY: Demonstrates how different sampling methods affect representativeness of metrics</span>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="ctrl-group">
+      <label>Sample Size: <span class="range-val" id="sample-size-val">25</span></label>
+      <input type="range" id="sample-size" min="5" max="80" value="25"
+        oninput="document.getElementById('sample-size-val').textContent=this.value;runSampling()">
+    </div>
+    <div class="ctrl-group">
+      <label>Metric to Analyse</label>
+      <select id="samp-metric" onchange="runSampling()">
+        <option value="Revenue generated">Revenue Generated</option>
+        <option value="Defect rates">Defect Rates</option>
+        <option value="Manufacturing costs">Manufacturing Costs</option>
+        <option value="Profit_Margin">Profit Margin (%)</option>
+        <option value="Lead times">Lead Times</option>
+      </select>
+    </div>
+    <div class="ctrl-group">
+      <label>Stratify By</label>
+      <select id="strat-col" onchange="runSampling()">
+        <option value="Product type">Product Type</option>
+        <option value="Location">Location</option>
+        <option value="Transportation modes">Transport Mode</option>
+      </select>
+    </div>
+    <button class="run-btn" onclick="runSampling()">↻ Resample</button>
+  </div>
+
+  <div class="chart-card" style="margin-bottom:24px;">
+    <h3>Sample Metric Comparison vs Population</h3>
+    <canvas id="samp-chart" height="200"></canvas>
+  </div>
+
+  <div class="sample-grid">
+    <div class="sample-card">
+      <h4>🎲 Simple Random Sample</h4>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">Each SKU has equal probability of selection.</p>
+      <div class="sample-tag-grid" id="srs-tags"></div>
+      <div id="srs-stats" style="margin-top:12px;font-family:var(--mono);font-size:12px;"></div>
+    </div>
+    <div class="sample-card">
+      <h4>📏 Systematic Sample</h4>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">Every k-th element selected from sorted list.</p>
+      <div class="sample-tag-grid" id="sys-tags"></div>
+      <div id="sys-stats" style="margin-top:12px;font-family:var(--mono);font-size:12px;"></div>
+    </div>
+    <div class="sample-card">
+      <h4>📊 Stratified Sample</h4>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">Proportional selection from each stratum.</p>
+      <div class="sample-tag-grid" id="strat-tags"></div>
+      <div id="strat-stats" style="margin-top:12px;font-family:var(--mono);font-size:12px;"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- SECTION 4: CLUSTERING -->
+<!-- ════════════════════════════════════════════════ -->
+<section class="section" id="sec3">
+  <div class="section-header">
+    <div class="section-num">04</div>
+    <div class="section-title">
+      <h2>K-Means Clustering</h2>
+      <p>Group SKUs into clusters based on supply chain attributes. Identify high-value, low-risk, and cost-heavy segments automatically.</p>
+      <span class="why-tag">WHY: Segments SKUs for targeted optimization — pricing, logistics, quality intervention</span>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="ctrl-group">
+      <label>X Axis</label>
+      <select id="cl-x" onchange="runClustering()">
+        <option value="Revenue generated">Revenue Generated</option>
+        <option value="Defect rates">Defect Rates</option>
+        <option value="Manufacturing costs">Manufacturing Costs</option>
+        <option value="Price">Price</option>
+        <option value="Lead times">Lead Times</option>
+        <option value="Profit_Margin">Profit Margin</option>
+      </select>
+    </div>
+    <div class="ctrl-group">
+      <label>Y Axis</label>
+      <select id="cl-y" onchange="runClustering()">
+        <option value="Defect rates">Defect Rates</option>
+        <option value="Revenue generated">Revenue Generated</option>
+        <option value="Costs">Transport Costs</option>
+        <option value="Shipping costs">Shipping Costs</option>
+        <option value="Manufacturing costs">Manufacturing Costs</option>
+        <option value="Profit_Margin">Profit Margin</option>
+      </select>
+    </div>
+    <div class="ctrl-group">
+      <label>Clusters (K): <span class="range-val" id="k-val">3</span></label>
+      <input type="range" id="k-slider" min="2" max="6" value="3"
+        oninput="document.getElementById('k-val').textContent=this.value;runClustering()">
+    </div>
+    <div class="ctrl-group">
+      <label>Max Iterations</label>
+      <select id="max-iter" onchange="runClustering()">
+        <option value="10">10</option>
+        <option value="25" selected>25</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+      </select>
+    </div>
+    <button class="run-btn" onclick="runClustering()">↻ Re-cluster</button>
+  </div>
+
+  <div class="grid2">
+    <div class="chart-card">
+      <h3>Cluster Scatter Plot</h3>
+      <canvas id="cl-chart" height="340"></canvas>
+      <div class="cluster-legend" id="cl-legend"></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div class="stats-panel" id="cl-stats">
+        <h3>Cluster Profiles</h3>
+        <p style="color:#888;font-size:12px;">Run clustering to see results</p>
+      </div>
+      <div class="chart-card">
+        <h3>Cluster Size Distribution</h3>
+        <canvas id="cl-pie" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-card" style="margin-top:24px;">
+    <h3>Cluster Mean Comparison (Revenue, Defect Rate, Manufacturing Cost)</h3>
+    <canvas id="cl-bar" height="180"></canvas>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- SECTION 5: PROBABILITY DISTRIBUTION -->
+<!-- ════════════════════════════════════════════════ -->
+<section class="section" id="sec4">
+  <div class="section-header">
+    <div class="section-num">05</div>
+    <div class="section-title">
+      <h2>Probability Distribution Analysis</h2>
+      <p>Analyse the distribution of supply chain metrics. View histograms, normal distribution overlays, and compute probabilities for any range.</p>
+      <span class="why-tag">WHY: Understand risk, variability, and likelihood of cost/quality events using probability theory</span>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="ctrl-group">
+      <label>Variable</label>
+      <select id="dist-var" onchange="runDistribution()">
+        <option value="Revenue generated">Revenue Generated</option>
+        <option value="Defect rates">Defect Rates</option>
+        <option value="Manufacturing costs">Manufacturing Costs</option>
+        <option value="Profit_Margin">Profit Margin (%)</option>
+        <option value="Shipping costs">Shipping Costs</option>
+        <option value="Lead times">Lead Times</option>
+        <option value="Costs">Transport Costs</option>
+      </select>
+    </div>
+    <div class="ctrl-group">
+      <label>Bins: <span class="range-val" id="bins-val">15</span></label>
+      <input type="range" id="bins-slider" min="5" max="30" value="15"
+        oninput="document.getElementById('bins-val').textContent=this.value;runDistribution()">
+    </div>
+    <div class="ctrl-group">
+      <label>Filter: Product Type</label>
+      <select id="dist-filter" onchange="runDistribution()">
+        <option value="all">All</option>
+        <option value="haircare">Haircare</option>
+        <option value="skincare">Skincare</option>
+        <option value="cosmetics">Cosmetics</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="dist-metrics" id="dist-metrics"></div>
+
+  <div class="grid2">
+    <div class="chart-card">
+      <h3>Histogram + Normal Curve Overlay</h3>
+      <canvas id="dist-chart" height="280"></canvas>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div class="predict-box">
+        <h3>Probability Calculator</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+          <div class="ctrl-group">
+            <label style="color:#888;">From</label>
+            <input type="number" id="prob-from" placeholder="min" oninput="calcProbability()"
+              style="background:#0d0f14;border:1px solid #2a2d36;color:#e0ddd8;padding:8px 10px;border-radius:3px;font-family:var(--mono);font-size:13px;width:100%;">
+          </div>
+          <div class="ctrl-group">
+            <label style="color:#888;">To</label>
+            <input type="number" id="prob-to" placeholder="max" oninput="calcProbability()"
+              style="background:#0d0f14;border:1px solid #2a2d36;color:#e0ddd8;padding:8px 10px;border-radius:3px;font-family:var(--mono);font-size:13px;width:100%;">
+          </div>
+        </div>
+        <div class="predict-label">P(from ≤ X ≤ to)</div>
+        <div class="predict-result" id="prob-result">—</div>
+        <div style="font-size:12px;color:#888;" id="prob-count"></div>
+        <div class="formula-box" id="prob-formula">Enter range above</div>
+      </div>
+      <div class="stats-panel">
+        <h3>Distribution Tests</h3>
+        <div id="dist-tests"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-card" style="margin-top:24px;">
+    <h3>CDF — Cumulative Distribution Function</h3>
+    <canvas id="cdf-chart" height="200"></canvas>
+  </div>
+</section>
+
+<script>
+// ══════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════
+const RAW = [{"Product type": "haircare", "SKU": "SKU0", "Price": 69.80800554, "Availability": 55.0, "Number of products sold": 802.0, "Revenue generated": 8661.996792, "Customer demographics": "Non-binary", "Stock levels": 58.0, "Lead times": 7.0, "Order quantities": 96.0, "Shipping times": 4.0, "Shipping carriers": "Carrier B", "Shipping costs": 2.956572139, "Supplier name": "Supplier 3", "Location": "Mumbai", "Lead time": 29.0, "Production volumes": 215.0, "Manufacturing lead time": 29.0, "Manufacturing costs": 46.27987924, "Inspection results": "Pending", "Defect rates": 0.226410361, "Transportation modes": "Road", "Routes": "Route B", "Costs": 187.7520755, "Profit_Margin": 97.26, "Total_Cost": 236.99}, {"Product type": "skincare", "SKU": "SKU1", "Price": 14.84352328, "Availability": 95.0, "Number of products sold": 736.0, "Revenue generated": 7460.900065, "Customer demographics": "Female", "Stock levels": 53.0, "Lead times": 30.0, "Order quantities": 37.0, "Shipping times": 2.0, "Shipping carriers": "Carrier A", "Shipping costs": 9.716574771, "Supplier name": "Supplier 3", "Location": "Mumbai", "Lead time": 23.0, "Production volumes": 517.0, "Manufacturing lead time": 30.0, "Manufacturing costs": 33.61676895, "Inspection results": "Pending", "Defect rates": 4.854068026, "Transportation modes": "Road", "Routes": "Route B", "Costs": 503.0655791, "Profit_Margin": 92.68, "Total_Cost": 546.4}, {"Product type": "haircare", "SKU": "SKU2", "Price": 11.31968329, "Availability": 34.0, "Number of products sold": 8.0, "Revenue generated": 9577.749626, "Customer demographics": "Unknown", "Stock levels": 1.0, "Lead times": 10.0, "Order quantities": 88.0, "Shipping times": 2.0, "Shipping carriers": "Carrier B", "Shipping costs": 8.054479262, "Supplier name": "Supplier 1", "Location": "Mumbai", "Lead time": 12.0, "Production volumes": 971.0, "Manufacturing lead time": 27.0, "Manufacturing costs": 30.68801935, "Inspection results": "Pending", "Defect rates": 4.580592619, "Transportation modes": "Air", "Routes": "Route C", "Costs": 141.9202818, "Profit_Margin": 98.11, "Total_Cost": 180.66}, {"Product type": "skincare", "SKU": "SKU3", "Price": 61.16334302, "Availability": 68.0, "Number of products sold": 83.0, "Revenue generated": 7766.836426, "Customer demographics": "Non-binary", "Stock levels": 23.0, "Lead times": 13.0, "Order quantities": 59.0, "Shipping times": 6.0, "Shipping carriers": "Carrier C", "Shipping costs": 1.729568564, "Supplier name": "Supplier 5", "Location": "Kolkata", "Lead time": 24.0, "Production volumes": 937.0, "Manufacturing lead time": 18.0, "Manufacturing costs": 35.6247414, "Inspection results": "Fail", "Defect rates": 4.746648621, "Transportation modes": "Rail", "Routes": "Route A", "Costs": 254.7761592, "Profit_Margin": 96.24, "Total_Cost": 292.13}, {"Product type": "skincare", "SKU": "SKU4", "Price": 4.805496036, "Availability": 26.0, "Number of products sold": 871.0, "Revenue generated": 2686.505152, "Customer demographics": "Non-binary", "Stock levels": 5.0, "Lead times": 3.0, "Order quantities": 56.0, "Shipping times": 8.0, "Shipping carriers": "Carrier A", "Shipping costs": 3.890547916, "Supplier name": "Supplier 1", "Location": "Delhi", "Lead time": 5.0, "Production volumes": 414.0, "Manufacturing lead time": 3.0, "Manufacturing costs": 92.0651606, "Inspection results": "Fail", "Defect rates": 3.145579523, "Transportation modes": "Air", "Routes": "Route A", "Costs": 923.4406317, "Profit_Margin": 62.05, "Total_Cost": 1019.4}, {"Product type": "haircare", "SKU": "SKU5", "Price": 1.699976014, "Availability": 87.0, "Number of products sold": 147.0, "Revenue generated": 2828.348746, "Customer demographics": "Non-binary", "Stock levels": 90.0, "Lead times": 27.0, "Order quantities": 66.0, "Shipping times": 3.0, "Shipping carriers": "Carrier B", "Shipping costs": 4.444098864, "Supplier name": "Supplier 4", "Location": "Bangalore", "Lead time": 10.0, "Production volumes": 104.0, "Manufacturing lead time": 17.0, "Manufacturing costs": 56.76647556, "Inspection results": "Fail", "Defect rates": 2.779193512, "Transportation modes": "Road", "Routes": "Route A", "Costs": 235.4612367, "Profit_Margin": 89.51, "Total_Cost": 296.67}, {"Product type": "skincare", "SKU": "SKU6", "Price": 4.078332863, "Availability": 48.0, "Number of products sold": 65.0, "Revenue generated": 7823.47656, "Customer demographics": "Male", "Stock levels": 11.0, "Lead times": 15.0, "Order quantities": 58.0, "Shipping times": 8.0, "Shipping carriers": "Carrier C", "Shipping costs": 3.880763303, "Supplier name": "Supplier 3", "Location": "Kolkata", "Lead time": 14.0, "Production volumes": 314.0, "Manufacturing lead time": 24.0, "Manufacturing costs": 1.08506857, "Inspection results": "Pending", "Defect rates": 1.000910619, "Transportation modes": "Sea", "Routes": "Route A", "Costs": 134.3690969, "Profit_Margin": 98.22, "Total_Cost": 139.33}, {"Product type": "cosmetics", "SKU": "SKU7", "Price": 42.95838438, "Availability": 59.0, "Number of products sold": 426.0, "Revenue generated": 8496.103813, "Customer demographics": "Female", "Stock levels": 93.0, "Lead times": 17.0, "Order quantities": 11.0, "Shipping times": 1.0, "Shipping carriers": "Carrier B", "Shipping costs": 2.348338784, "Supplier name": "Supplier 4", "Location": "Bangalore", "Lead time": 22.0, "Production volumes": 564.0, "Manufacturing lead time": 1.0, "Manufacturing costs": 99.4661086, "Inspection results": "Fail", "Defect rates": 0.398177187, "Transportation modes": "Road", "Routes": "Route C", "Costs": 802.0563118, "Profit_Margin": 89.36, "Total_Cost": 903.87}, {"Product type": "cosmetics", "SKU": "SKU8", "Price": 68.71759675, "Availability": 78.0, "Number of products sold": 150.0, "Revenue generated": 7517.363211, "Customer demographics": "Female", "Stock levels": 5.0, "Lead times": 10.0, "Order quantities": 15.0, "Shipping times": 7.0, "Shipping carriers": "Carrier C", "Shipping costs": 3.404733857, "Supplier name": "Supplier 4", "Location": "Mumbai", "Lead time": 13.0, "Production volumes": 769.0, "Manufacturing lead time": 8.0, "Manufacturing costs": 11.42302714, "Inspection results": "Pending", "Defect rates": 2.709862691, "Transportation modes": "Sea", "Routes": "Route B", "Costs": 505.5571342, "Profit_Margin": 93.08, "Total_Cost": 520.38}, {"Product type": "skincare", "SKU": "SKU9", "Price": 64.01573294, "Availability": 35.0, "Number of products sold": 980.0, "Revenue generated": 4971.145988, "Customer demographics": "Unknown", "Stock levels": 14.0, "Lead times": 27.0, "Order quantities": 83.0, "Shipping times": 1.0, "Shipping carriers": "Carrier A", "Shipping costs": 7.166645291, "Supplier name": "Supplier 2", "Location": "Chennai", "Lead time": 29.0, "Production volumes": 963.0, "Manufacturing lead time": 23.0, "Manufacturing costs": 47.95760163, "Inspection results": "Pending", "Defect rates": 3.844614479, "Transportation modes": "Rail", "Routes": "Route B", "Costs": 995.9294615, "Profit_Margin": 78.86, "Total_Cost": 1051.05}, {"Product type": "skincare", "SKU": "SKU10", "Price": 15.70779568, "Availability": 11.0, "Number of products sold": 996.0, "Revenue generated": 2330.965802, "Customer demographics": "Non-binary", "Stock levels": 51.0, "Lead times": 13.0, "Order quantities": 80.0, "Shipping times": 2.0, "Shipping carriers": "Carrier C", "Shipping costs": 8.673211211, "Supplier name": "Supplier 5", "Location": "Kolkata", "Lead time": 18.0, "Production volumes": 830.0, "Manufacturing lead time": 5.0, "Manufacturing costs": 96.52735279, "Inspection results": "Pass", "Defect rates": 1.727313928, "Transportation modes": "Road", "Routes": "Route B", "Costs": 806.1031777, "Profit_Margin": 60.9, "Total_Cost": 911.3}, {"Product type": "skincare", "SKU": "SKU11", "Price": 90.63545998, "Availability": 95.0, "Number of products sold": 960.0, "Revenue generated": 6099.944116, "Customer demographics": "Female", "Stock levels": 46.0, "Lead times": 23.0, "Order quantities": 60.0, "Shipping times": 1.0, "Shipping carriers": "Carrier A", "Shipping costs": 4.523943124, "Supplier name": "Supplier 2", "Location": "Kolkata", "Lead time": 28.0, "Production volumes": 362.0, "Manufacturing lead time": 11.0, "Manufacturing costs": 27.59236309, "Inspection results": "Pending", "Defect rates": 0.021169821, "Transportation modes": "Air", "Routes": "Route A", "Costs": 126.7230334, "Profit_Margin": 97.4, "Total_Cost": 158.84}, {"Product type": "haircare", "SKU": "SKU12", "Price": 71.21338908, "Availability": 41.0, "Number of products sold": 336.0, "Revenue generated": 2873.741446, "Customer demographics": "Unknown", "Stock levels": 100.0, "Lead times": 30.0, "Order quantities": 85.0, "Shipping times": 4.0, "Shipping carriers": "Carrier A", "Shipping costs": 1.32527401, "Supplier name": "Supplier 4", "Location": "Kolkata", "Lead time": 3.0, "Production volumes": 563.0, "Manufacturing lead time": 3.0, "Manufacturing costs": 32.32128621, "Inspection results": "Fail", "Defect rates": 2.161253748, "Transportation modes": "Road", "Routes": "Route B", "Costs": 402.9687891, "Profit_Margin": 84.81, "Total_Cost": 436.62}, {"Product type": "skincare", "SKU": "SKU13", "Price": 16.16039332, "Availability": 5.0, "Number of products sold": 249.0, "Revenue generated": 4052.738416, "Customer demographics": "Male", "Stock levels": 80.0, "Lead times": 8.0, "Order quantities": 48.0, "Shipping times": 9.0, "Shipping carriers": "Carrier A", "Shipping costs": 9.537283061, "Supplier name": "Supplier 5", "Location": "Bangalore", "Lead time": 23.0, "Production volumes": 173.0, "Manufacturing lead time": 10.0, "Manufacturing costs": 97.82905011, "Inspection results": "Pending", "Defect rates": 1.63107423, "Transportation modes": "Road", "Routes": "Route B", "Costs": 547.2410052, "Profit_Margin": 83.85, "Total_Cost": 654.61}, {"Product type": "skincare", "SKU": "SKU14", "Price": 99.17132864, "Availability": 26.0, "Number of products sold": 562.0, "Revenue generated": 8653.570926, "Customer demographics": "Non-binary", "Stock levels": 54.0, "Lead times": 29.0, "Order quantities": 78.0, "Shipping times": 5.0, "Shipping carriers": "Carrier B", "Shipping costs": 2.039770189, "Supplier name": "Supplier 1", "Location": "Kolkata", "Lead time": 25.0, "Production volumes": 558.0, "Manufacturing lead time": 14.0, "Manufacturing costs": 5.79143663, "Inspection results": "Pending", "Defect rates": 0.100682852, "Transportation modes": "Air", "Routes": "Route B", "Costs": 929.23529, "Profit_Margin": 89.17, "Total_Cost": 937.07}, {"Product type": "skincare", "SKU": "SKU15", "Price": 36.98924493, "Availability": 94.0, "Number of products sold": 469.0, "Revenue generated": 5442.086785, "Customer demographics": "Non-binary", "Stock levels": 9.0, "Lead times": 8.0, "Order quantities": 69.0, "Shipping times": 7.0, "Shipping carriers": "Carrier B", "Shipping costs": 2.422039723, "Supplier name": "Supplier 1", "Location": "Bangalore", "Lead time": 14.0, "Production volumes": 580.0, "Manufacturing lead time": 7.0, "Manufacturing costs": 97.12128175, "Inspection results": "Pass", "Defect rates": 2.264405761, "Transportation modes": "Sea", "Routes": "Route B", "Costs": 127.8618, "Profit_Margin": 95.82, "Total_Cost": 227.41}, {"Product type": "skincare", "SKU": "SKU16", "Price": 7.54717211, "Availability": 74.0, "Number of products sold": 280.0, "Revenue generated": 6453.797968, "Customer demographics": "Female", "Stock levels": 2.0, "Lead times": 5.0, "Order quantities": 78.0, "Shipping times": 1.0, "Shipping carriers": "Carrier B", "Shipping costs": 4.191324586, "Supplier name": "Supplier 1", "Location": "Bangalore", "Lead time": 3.0, "Production volumes": 399.0, "Manufacturing lead time": 21.0, "Manufacturing costs": 77.1063425, "Inspection results": "Pass", "Defect rates": 1.012563089, "Transportation modes": "Air", "Routes": "Route A", "Costs": 865.5257798, "Profit_Margin": 85.33, "Total_Cost": 946.82}, {"Product type": "cosmetics", "SKU": "SKU17", "Price": 81.46253437, "Availability": 82.0, "Number of products sold": 126.0, "Revenue generated": 2629.396435, "Customer demographics": "Female", "Stock levels": 45.0, "Lead times": 17.0, "Order quantities": 85.0, "Shipping times": 9.0, "Shipping carriers": "Carrier C", "Shipping costs": 3.585418958, "Supplier name": "Supplier 1", "Location": "Chennai", "Lead time": 7.0, "Production volumes": 453.0, "Manufacturing lead time": 16.0, "Manufacturing costs": 47.67968037, "Inspection results": "Fail", "Defect rates": 0.102020755, "Transportation modes": "Air", "Routes": "Route C", "Costs": 670.9343908, "Profit_Margin": 72.53, "Total_Cost": 722.2}, {"Product type": "haircare", "SKU": "SKU18", "Price": 36.44362777, "Availability": 23.0, "Number of products sold": 620.0, "Revenue generated": 9364.673505, "Customer demographics": "Unknown", "Stock levels": 10.0, "Lead times": 10.0, "Order quantities": 46.0, "Shipping times": 8.0, "Shipping carriers": "Carrier C", "Shipping costs": 4.339224714, "Supplier name": "Supplier 2", "Location": "Kolkata", "Lead time": 18.0, "Production volumes": 374.0, "Manufacturing lead time": 17.0, "Manufacturing costs": 27.10798085, "Inspection results": "Pending", "Defect rates": 2.231939111, "Transportation modes": "Sea", "Routes": "Route A", "Costs": 593.4802587, "Profit_Margin": 93.33, "Total_Cost": 624.93}, {"Product type": "skincare", "SKU": "SKU19", "Price": 51.12387009, "Availability": 100.0, "Number of products sold": 187.0, "Revenue generated": 2553.495585, "Customer demographics": "Unknown", "Stock levels": 48.0, "Lead times": 11.0, "Order quantities": 94.0, "Shipping times": 3.0, "Shipping carriers": "Carrier A", "Shipping costs": 4.742635883, "Supplier name": "Supplier 4", "Location": "Chennai", "Lead time": 20.0, "Production volumes": 694.0, "Manufacturing lead time": 16.0, "Manufacturing costs": 82.37332059, "Inspection results": "Fail", "Defect rates": 3.646450865, "Transportation modes": "Road", "Routes": "Route C", "Costs": 477.3076311, "Profit_Margin": 77.9, "Total_Cost": 564.42}, {"Product type": "skincare", "SKU": "SKU20", "Price": 96.34107244, "Availability": 22.0, "Number of products sold": 320.0, "Revenue generated": 8128.027697, "Customer demographics": "Unknown", "Stock levels": 27.0, "Lead times": 12.0, "Order quantities": 68.0, "Shipping times": 6.0, "Shipping carriers": "Carrier A", "Shipping costs": 8.878334651, "Supplier name": "Supplier 1", "Location": "Chennai", "Lead time": 29.0, "Production volumes": 309.0, "Manufacturing lead time": 6.0, "Manufacturing costs": 65.68625961, "Inspection results": "Pass", "Defect rates": 4.231416574, "Transportation modes": "Air", "Routes": "Route B", "Costs": 493.8712153, "Profit_Margin": 93.01, "Total_Cost": 568.44}, {"Product type": "cosmetics", "SKU": "SKU21", "Price": 84.89386898, "Availability": 60.0, "Number of products sold": 601.0, "Revenue generated": 7087.052696, "Customer demographics": "Unknown", "Stock levels": 69.0, "Lead times": 25.0, "Order quantities": 7.0, "Shipping times": 6.0, "Shipping carriers": "Carrier B", "Shipping costs": 6.037883769, "Supplier name": "Supplier 5", "Location": "Chennai", "Lead time": 19.0, "Production volumes": 791.0, "Manufacturing lead time": 4.0, "Manufacturing costs": 61.73572895, "Inspection results": "Pending", "Defect rates": 0.018607568, "Transportation modes": "Air", "Routes": "Route C", "Costs": 523.3609147, "Profit_Margin": 91.66, "Total_Cost": 591.13}, {"Product type": "haircare", "SKU": "SKU22", "Price": 27.67978089, "Availability": 55.0, "Number of products sold": 884.0, "Revenue generated": 2390.807867, "Customer demographics": "Unknown", "Stock levels": 71.0, "Lead times": 1.0, "Order quantities": 63.0, "Shipping times": 10.0, "Shipping carriers": "Carrier A", "Shipping costs": 9.567648921, "Supplier name": "Supplier 4", "Location": "Kolkata", "Lead time": 22.0, "Production volumes": 780.0, "Manufacturing lead time": 28.0, "Manufacturing costs": 50.12083961, "Inspection results": "Fail", "Defect rates": 2.591275473, "Transportation modes": "Rail", "Routes": "Route C", "Costs": 205.5719958, "Profit_Margin": 88.9, "Total_Cost": 265.26}, {"Product type": "cosmetics", "SKU": "SKU23", "Price": 4.324341186, "Availability": 30.0, "Number of products sold": 391.0, "Revenue generated": 8858.367571, "Customer demographics": "Unknown", "Stock levels": 84.0, "Lead times": 5.0, "Order quantities": 29.0, "Shipping times": 7.0, "Shipping carriers": "Carrier A", "Shipping costs": 2.924857601, "Supplier name": "Supplier 5", "Location": "Kolkata", "Lead time": 11.0, "Production volumes": 568.0, "Manufacturing lead time": 29.0, "Manufacturing costs": 98.60995724, "Inspection results": "Pending", "Defect rates": 1.342291563, "Transportation modes": "Rail", "Routes": "Route A", "Costs": 196.3294461, "Profit_Margin": 96.64, "Total_Cost": 297.86}, {"Product type": "haircare", "SKU": "SKU24", "Price": 4.156308359, "Availability": 32.0, "Number of products sold": 209.0, "Revenue generated": 9049.077861, "Customer demographics": "Male", "Stock levels": 4.0, "Lead times": 26.0, "Order quantities": 2.0, "Shipping times": 8.0, "Shipping carriers": "Carrier C", "Shipping costs": 9.741291689, "Supplier name": "Supplier 2", "Location": "Bangalore", "Lead time": 28.0, "Production volumes": 447.0, "Manufacturing lead time": 3.0, "Manufacturing costs": 40.3823597, "Inspection results": "Pending", "Defect rates": 3.691310293, "Transportation modes": "Air", "Routes": "Route A", "Costs": 758.7247726, "Profit_Margin": 91.06, "Total_Cost": 808.85}, {"Product type": "haircare", "SKU": "SKU25", "Price": 39.62934399, "Availability": 73.0, "Number of products sold": 142.0, "Revenue generated": 2174.777054, "Customer demographics": "Male", "Stock levels": 82.0, "Lead times": 11.0, "Order quantities": 52.0, "Shipping times": 3.0, "Shipping carriers": "Carrier C", "Shipping costs": 2.231073681, "Supplier name": "Supplier 4", "Location": "Kolkata", "Lead time": 19.0, "Production volumes": 934.0, "Manufacturing lead time": 23.0, "Manufacturing costs": 78.28038312, "Inspection results": "Pending", "Defect rates": 3.797231217, "Transportation modes": "Road", "Routes": "Route B", "Costs": 458.5359457, "Profit_Margin": 75.21, "Total_Cost": 539.05}, {"Product type": "haircare", "SKU": "SKU26", "Price": 97.44694662, "Availability": 9.0, "Number of products sold": 353.0, "Revenue generated": 3716.493326, "Customer demographics": "Male", "Stock levels": 59.0, "Lead times": 16.0, "Order quantities": 48.0, "Shipping times": 4.0, "Shipping carriers": "Carrier B", "Shipping costs": 6.507548621, "Supplier name": "Supplier 2", "Location": "Bangalore", "Lead time": 26.0, "Production volumes": 171.0, "Manufacturing lead time": 4.0, "Manufacturing costs": 15.97222976, "Inspection results": "Pass", "Defect rates": 2.119319737, "Transportation modes": "Rail", "Routes": "Route A", "Costs": 617.8669165, "Profit_Margin": 82.77, "Total_Cost": 640.35}, {"Product type": "cosmetics", "SKU": "SKU27", "Price": 92.55736081, "Availability": 42.0, "Number of products sold": 352.0, "Revenue generated": 2686.457224, "Customer demographics": "Unknown", "Stock levels": 47.0, "Lead times": 9.0, "Order quantities": 62.0, "Shipping times": 8.0, "Shipping carriers": "Carrier C", "Shipping costs": 7.406750953, "Supplier name": "Supplier 5", "Location": "Mumbai", "Lead time": 25.0, "Production volumes": 291.0, "Manufacturing lead time": 4.0, "Manufacturing costs": 10.52824507, "Inspection results": "Fail", "Defect rates": 2.864667838, "Transportation modes": "Sea", "Routes": "Route B", "Costs": 762.4591822, "Profit_Margin": 70.95, "Total_Cost": 780.39}, {"Product type": "cosmetics", "SKU": "SKU28", "Price": 2.397274706, "Availability": 12.0, "Number of products sold": 394.0, "Revenue generated": 6117.324615, "Customer demographics": "Female", "Stock levels": 48.0, "Lead times": 15.0, "Order quantities": 24.0, "Shipping times": 4.0, "Shipping carriers": "Carrier B", "Shipping costs": 9.898140508, "Supplier name": "Supplier 1", "Location": "Mumbai", "Lead time": 13.0, "Production volumes": 171.0, "Manufacturing lead time": 7.0, "Manufacturing costs": 59.42938181, "Inspection results": "Fail", "Defect rates": 0.815757079, "Transportation modes": "Air", "Routes": "Route A", "Costs": 123.4370275, "Profit_Margin": 96.85, "Total_Cost": 192.76}, {"Product type": "cosmetics", "SKU": "SKU29", "Price": 63.44755919, "Availability": 3.0, "Number of products sold": 253.0, "Revenue generated": 8318.903195, "Customer demographics": "Female", "Stock levels": 45.0, "Lead times": 5.0, "Order quantities": 67.0, "Shipping times": 7.0, "Shipping carriers": "Carrier B", "Shipping costs": 8.100973145, "Supplier name": "Supplier 1", "Location": "Kolkata", "Lead time": 16.0, "Production volumes": 329.0, "Manufacturing lead time": 7.0, "Manufacturing costs": 39.29287559, "Inspection results": "Pass", "Defect rates": 3.878098937, "Transportation modes": "Road", "Routes": "Route B", "Costs": 764.9353759, "Profit_Margin": 90.24, "Total_Cost": 812.33}, {"Product type": "haircare", "SKU": "SKU30", "Price": 8.022859211, "Availability": 10.0, "Number of products sold": 327.0, "Revenue generated": 2766.342367, "Customer demographics": "Male", "Stock levels": 60.0, "Lead times": 26.0, "Order quantities": 35.0, "Shipping times": 7.0, "Shipping carriers": "Carrier B", "Shipping costs": 8.954528315, "Supplier name": "Supplier 4", "Location": "Kolkata", "Lead time": 27.0, "Production volumes": 806.0, "Manufacturing lead time": 30.0, "Manufacturing costs": 51.6348934, "Inspection results": "Pending", "Defect rates": 0.965394705, "Transportation modes": "Road", "Routes": "Route C", "Costs": 880.0809882, "Profit_Margin": 66.0, "Total_Cost": 940.67}, {"Product type": "skincare", "SKU": "SKU31", "Price": 50.84739305, "Availability": 28.0, "Number of products sold": 168.0, "Revenue generated": 9655.135103, "Customer demographics": "Male", "Stock levels": 6.0, "Lead times": 17.0, "Order quantities": 44.0, "Shipping times": 4.0, "Shipping carriers": "Carrier B", "Shipping costs": 2.679660965, "Supplier name": "Supplier 3", "Location": "Chennai", "Lead time": 24.0, "Production volumes": 461.0, "Manufacturing lead time": 8.0, "Manufacturing costs": 60.25114566, "Inspection results": "Pending", "Defect rates": 2.989000007, "Transportation modes": "Rail", "Routes": "Route C", "Costs": 609.3792066, "Profit_Margin": 93.04, "Total_Cost": 672.31}, {"Product type": "skincare", "SKU": "SKU32", "Price": 79.20993602, "Availability": 43.0, "Number of products sold": 781.0, "Revenue generated": 9571.550487, "Customer demographics": "Unknown", "Stock levels": 89.0, "Lead times": 13.0, "Order quantities": 64.0, "Shipping times": 4.0, "Shipping carriers": "Carrier C", "Shipping costs": 6.599104901, "Supplier name": "Supplier 3", "Location": "Kolkata", "Lead time": 30.0, "Production volumes": 737.0, "Manufacturing lead time": 7.0, "Manufacturing costs": 29.69246715, "Inspection results": "Pass", "Defect rates": 1.946036119, "Transportation modes": "Road", "Routes": "Route A", "Costs": 761.1739095, "Profit_Margin": 91.67, "Total_Cost": 797.47}, {"Product type": "cosmetics", "SKU": "SKU33", "Price": 64.795435, "Availability": 63.0, "Number of products sold": 616.0, "Revenue generated": 5149.99835, "Customer demographics": "Non-binary", "Stock levels": 4.0, "Lead times": 17.0, "Order quantities": 95.0, "Shipping times": 9.0, "Shipping carriers": "Carrier C", "Shipping costs": 4.858270503, "Supplier name": "Supplier 5", "Location": "Chennai", "Lead time": 1.0, "Production volumes": 251.0, "Manufacturing lead time": 23.0, "Manufacturing costs": 23.85342751, "Inspection results": "Fail", "Defect rates": 3.541046012, "Transportation modes": "Sea", "Routes": "Route A", "Costs": 371.2552955, "Profit_Margin": 92.23, "Total_Cost": 399.97}, {"Product type": "skincare", "SKU": "SKU34", "Price": 37.46759233, "Availability": 96.0, "Number of products sold": 602.0, "Revenue generated": 9061.710896, "Customer demographics": "Unknown", "Stock levels": 1.0, "Lead times": 26.0, "Order quantities": 21.0, "Shipping times": 7.0, "Shipping carriers": "Carrier A", "Shipping costs": 1.019487571, "Supplier name": "Supplier 1", "Location": "Chennai", "Lead time": 4.0, "Production volumes": 452.0, "Manufacturing lead time": 10.0, "Manufacturing costs": 10.75427282, "Inspection results": "Pass", "Defect rates": 0.646604559, "Transportation modes": "Road", "Routes": "Route B", "Costs": 510.3580004, "Profit_Margin": 94.24, "Total_Cost": 522.13}, {"Product type": "cosmetics", "SKU": "SKU35", "Price": 84.95778682, "Availability": 11.0, "Number of products sold": 449.0, "Revenue generated": 6541.329345, "Customer demographics": "Female", "Stock levels": 42.0, "Lead times": 27.0, "Order quantities": 85.0, "Shipping times": 8.0, "Shipping carriers": "Carrier C", "Shipping costs": 5.28818999, "Supplier name": "Supplier 1", "Location": "Delhi", "Lead time": 3.0, "Production volumes": 367.0, "Manufacturing lead time": 2.0, "Manufacturing costs": 58.00478704, "Inspection results": "Pass", "Defect rates": 0.541154098, "Transportation modes": "Sea", "Routes": "Route C", "Costs": 553.4204712, "Profit_Margin": 90.57, "Total_Cost": 616.71}, {"Product type": "skincare", "SKU": "SKU36", "Price": 9.813002579, "Availability": 34.0, "Number of products sold": 963.0, "Revenue generated": 7573.402458, "Customer demographics": "Female", "Stock levels": 18.0, "Lead times": 23.0, "Order quantities": 28.0, "Shipping times": 3.0, "Shipping carriers": "Carrier B", "Shipping costs": 2.107951267, "Supplier name": "Supplier 2", "Location": "Delhi", "Lead time": 26.0, "Production volumes": 671.0, "Manufacturing lead time": 19.0, "Manufacturing costs": 45.53136424, "Inspection results": "Fail", "Defect rates": 3.805533379, "Transportation modes": "Air", "Routes": "Route C", "Costs": 403.8089742, "Profit_Margin": 94.04, "Total_Cost": 451.45}, {"Product type": "skincare", "SKU": "SKU37", "Price": 23.39984475, "Availability": 5.0, "Number of products sold": 963.0, "Revenue generated": 2438.33993, "Customer demographics": "Female", "Stock levels": 25.0, "Lead times": 8.0, "Order quantities": 21.0, "Shipping times": 9.0, "Shipping carriers": "Carrier A", "Shipping costs": 1.532655274, "Supplier name": "Supplier 3", "Location": "Kolkata", "Lead time": 24.0, "Production volumes": 867.0, "Manufacturing lead time": 15.0, "Manufacturing costs": 34.34327747, "Inspection results": "Pending", "Defect rates": 2.610288085, "Transportation modes": "Sea", "Routes": "Route A", "Costs": 183.932968, "Profit_Margin": 90.99, "Total_Cost": 219.81}, {"Product type": "cosmetics", "SKU": "SKU38", "Price": 52.07593068, "Availability": 75.0, "Number of products sold": 705.0, "Revenue generated": 9692.31804, "Customer demographics": "Non-binary", "Stock levels": 69.0, "Lead times": 1.0, "Order quantities": 88.0, "Shipping times": 5.0, "Shipping carriers": "Carrier B", "Shipping costs": 9.235931437, "Supplier name": "Supplier 5", "Location": "Mumbai", "Lead time": 10.0, "Production volumes": 841.0, "Manufacturing lead time": 12.0, "Manufacturing costs": 5.930693646, "Inspection results": "Pending", "Defect rates": 0.613326899, "Transportation modes": "Air", "Routes": "Route B", "Costs": 339.6728699, "Profit_Margin": 96.34, "Total_Cost": 354.84}, {"Product type": "skincare", "SKU": "SKU39", "Price": 19.12747727, "Availability": 26.0, "Number of products sold": 176.0, "Revenue generated": 1912.465663, "Customer demographics": "Female", "Stock levels": 78.0, "Lead times": 29.0, "Order quantities": 34.0, "Shipping times": 3.0, "Shipping carriers": "Carrier A", "Shipping costs": 5.562503779, "Supplier name": "Supplier 2", "Location": "Kolkata", "Lead time": 30.0, "Production volumes": 791.0, "Manufacturing lead time": 6.0, "Manufacturing costs": 9.005807429, "Inspection results": "Fail", "Defect rates": 1.451972204, "Transportation modes": "Air", "Routes": "Route B", "Costs": 653.6729946, "Profit_Margin": 65.06, "Total_Cost": 668.24}, {"Product type": "skincare", "SKU": "SKU40", "Price": 80.54142417, "Availability": 97.0, "Number of products sold": 933.0, "Revenue generated": 5724.95935, "Customer demographics": "Female", "Stock levels": 90.0, "Lead times": 20.0, "Order quantities": 39.0, "Shipping times": 8.0, "Shipping carriers": "Carrier C", "Shipping costs": 7.22959514, "Supplier name": "Supplier 1", "Location": "Kolkata", "Lead time": 18.0, "Production volumes": 793.0, "Manufacturing lead time": 1.0, "Manufacturing costs": 88.1794071, "Inspection results": "Pending", "Defect rates": 4.213269431, "Transportation modes": "Road", "Routes": "Route A", "Costs": 529.808724, "Profit_Margin": 89.08, "Total_Cost": 625.22}, {"Product type": "skincare", "SKU": "SKU41", "Price": 99.11329162, "Availability": 35.0, "Number of products sold": 556.0, "Revenue generated": 5521.205259, "Customer demographics": "Female", "Stock levels": 64.0, "Lead times": 19.0, "Order quantities": 38.0, "Shipping times": 8.0, "Shipping carriers": "Carrier B", "Shipping costs": 5.773263744, "Supplier name": "Supplier 4", "Location": "Chennai", "Lead time": 18.0, "Production volumes": 892.0, "Manufacturing lead time": 7.0, "Manufacturing costs": 95.33206455, "Inspection results": "Fail", "Defect rates": 0.045302262, "Transportation modes": "Sea", "Routes": "Route A", "Costs": 275.5243711, "Profit_Margin": 93.18, "Total_Cost": 376.63}, {"Product type": "skincare", "SKU": "SKU42", "Price": 46.52916761, "Availability": 98.0, "Number of products sold": 155.0, "Revenue generated": 1839.609426, "Customer demographics": "Female", "Stock levels": 22.0, "Lead times": 27.0, "Order quantities": 57.0, "Shipping times": 4.0, "Shipping carriers": "Carrier C", "Shipping costs": 7.526248327, "Supplier name": "Supplier 5", "Location": "Bangalore", "Lead time": 26.0, "Production volumes": 179.0, "Manufacturing lead time": 7.0, "Manufacturing costs": 96.42282064, "Inspection results": "Fail", "Defect rates": 4.939255289, "Transportation modes": "Road", "Routes": "Route A", "Costs": 635.6571205, "Profit_Margin": 59.8, "Total_Cost": 739.61}, {"Product type": "haircare", "SKU": "SKU43", "Price": 11.74327178, "Availability": 6.0, "Number of products sold": 598.0, "Revenue generated": 5737.425599, "Customer demographics": "Unknown", "Stock levels": 36.0, "Lead times": 29.0, "Order quantities": 85.0, "Shipping times": 9.0, "Shipping carriers": "Carrier B", "Shipping costs": 3.694021268, "Supplier name": "Supplier 5", "Location": "Mumbai", "Lead time": 1.0, "Production volumes": 206.0, "Manufacturing lead time": 23.0, "Manufacturing costs": 26.27736596, "Inspection results": "Pending", "Defect rates": 0.372304768, "Transportation modes": "Air", "Routes": "Route A", "Costs": 716.0441198, "Profit_Margin": 87.0, "Total_Cost": 746.02}, {"Product type": "cosmetics", "SKU": "SKU44", "Price": 51.35579091, "Availability": 34.0, "Number of products sold": 919.0, "Revenue generated": 7152.286049, "Customer demographics": "Female", "Stock levels": 13.0, "Lead times": 19.0, "Order quantities": 72.0, "Shipping times": 6.0, "Shipping carriers": "Carrier C", "Shipping costs": 7.577449657, "Supplier name": "Supplier 2", "Location": "Delhi", "Lead time": 7.0, "Production volumes": 834.0, "Manufacturing lead time": 18.0, "Manufacturing costs": 22.55410662, "Inspection results": "Fail", "Defect rates": 2.96262632, "Transportation modes": "Rail", "Routes": "Route A", "Costs": 610.4532696, "Profit_Margin": 91.04, "Total_Cost": 640.58}, {"Product type": "haircare", "SKU": "SKU45", "Price": 33.78413803, "Availability": 1.0, "Number of products sold": 24.0, "Revenue generated": 5267.956808, "Customer demographics": "Male", "Stock levels": 93.0, "Lead times": 7.0, "Order quantities": 52.0, "Shipping times": 6.0, "Shipping carriers": "Carrier B", "Shipping costs": 5.215155009, "Supplier name": "Supplier 2", "Location": "Chennai", "Lead time": 25.0, "Production volumes": 794.0, "Manufacturing lead time": 25.0, "Manufacturing costs": 66.31254444, "Inspection results": "Pass", "Defect rates": 3.219604612, "Transportation modes": "Rail", "Routes": "Route A", "Costs": 495.305697, "Profit_Margin": 89.24, "Total_Cost": 566.83}, {"Product type": "haircare", "SKU": "SKU46", "Price": 27.0822072, "Availability": 75.0, "Number of products sold": 859.0, "Revenue generated": 2556.767361, "Customer demographics": "Non-binary", "Stock levels": 92.0, "Lead times": 29.0, "Order quantities": 6.0, "Shipping times": 8.0, "Shipping carriers": "Carrier B", "Shipping costs": 4.070955837, "Supplier name": "Supplier 3", "Location": "Chennai", "Lead time": 18.0, "Production volumes": 870.0, "Manufacturing lead time": 23.0, "Manufacturing costs": 77.32235321, "Inspection results": "Pending", "Defect rates": 3.648610593, "Transportation modes": "Road", "Routes": "Route B", "Costs": 380.4359371, "Profit_Margin": 81.94, "Total_Cost": 461.83}, {"Product type": "skincare", "SKU": "SKU47", "Price": 95.71213588, "Availability": 93.0, "Number of products sold": 910.0, "Revenue generated": 7089.47425, "Customer demographics": "Male", "Stock levels": 4.0, "Lead times": 15.0, "Order quantities": 51.0, "Shipping times": 9.0, "Shipping carriers": "Carrier B", "Shipping costs": 8.978750756, "Supplier name": "Supplier 1", "Location": "Kolkata", "Lead time": 10.0, "Production volumes": 964.0, "Manufacturing lead time": 20.0, "Manufacturing costs": 19.71299291, "Inspection results": "Pending", "Defect rates": 0.380573587, "Transportation modes": "Rail", "Routes": "Route A", "Costs": 581.6023551, "Profit_Margin": 91.39, "Total_Cost": 610.29}, {"Product type": "haircare", "SKU": "SKU48", "Price": 76.03554443, "Availability": 28.0, "Number of products sold": 29.0, "Revenue generated": 7397.071005, "Customer demographics": "Non-binary", "Stock levels": 30.0, "Lead times": 16.0, "Order quantities": 9.0, "Shipping times": 3.0, "Shipping carriers": "Carrier C", "Shipping costs": 7.095833157, "Supplier name": "Supplier 2", "Location": "Mumbai", "Lead time": 9.0, "Production volumes": 109.0, "Manufacturing lead time": 18.0, "Manufacturing costs": 23.12636358, "Inspection results": "Fail", "Defect rates": 1.698112541, "Transportation modes": "Rail", "Routes": "Route B", "Costs": 768.651914, "Profit_Margin": 89.2, "Total_Cost": 798.87}, {"Product type": "cosmetics", "SKU": "SKU49", "Price": 78.89791321, "Availability": 19.0, "Number of products sold": 99.0, "Revenue generated": 8001.613207, "Customer demographics": "Unknown", "Stock levels": 97.0, "Lead times": 24.0, "Order quantities": 9.0, "Shipping times": 6.0, "Shipping carriers": "Carrier C", "Shipping costs": 2.505621033, "Supplier name": "Supplier 5", "Location": "Delhi", "Lead time": 28.0, "Production volumes": 177.0, "Manufacturing lead time": 28.0, "Manufacturing costs": 14.14781544, "Inspection results": "Pass", "Defect rates": 2.825813985, "Transportation modes": "Rail", "Routes": "Route A", "Costs": 336.8901685, "Profit_Margin": 95.58, "Total_Cost": 353.54}, {"Product type": "cosmetics", "SKU": "SKU50", "Price": 14.20348426, "Availability": 91.0, "Number of products sold": 633.0, "Revenue generated": 5910.88539, "Customer demographics": "Female", "Stock levels": 31.0, "Lead times": 23.0, "Order quantities": 82.0, "Shipping times": 10.0, "Shipping carriers": "Carrier A", "Shipping costs": 6.247860915, "Supplier name": "Supplier 2", "Location": "Delhi", "Lead time": 20.0, "Production volumes": 306.0, "Manufacturing lead time": 21.0, "Manufacturing costs": 45.17875792, "Inspection results": "Fail", "Defect rates": 4.754800805, "Transportation modes": "Rail", "Routes": "Route B", "Costs": 496.2486503, "Profit_Margin": 90.73, "Total_Cost": 547.68}, {"Product type": "haircare", "SKU": "SKU51", "Price": 26.70076097, "Availability": 61.0, "Number of products sold": 154.0, "Revenue generated": 9866.465458, "Customer demographics": "Male", "Stock levels": 100.0, "Lead times": 4.0, "Order quantities": 52.0, "Shipping times": 1.0, "Shipping carriers": "Carrier A", "Shipping costs": 4.783000558, "Supplier name": "Supplier 5", "Location": "Bangalore", "Lead time": 18.0, "Production volumes": 673.0, "Manufacturing lead time": 28.0, "Manufacturing costs": 14.19032834, "Inspection results": "Pending", "Defect rates": 1.772951172, "Transportation modes": "Road", "Routes": "Route A", "Costs": 694.9823176, "Profit_Margin": 92.76, "Total_Cost": 713.96}, {"Product type": "skincare", "SKU": "SKU52", "Price": 98.03182966, "Availability": 1.0, "Number of products sold": 820.0, "Revenue generated": 9435.762609, "Customer demographics": "Male", "Stock levels": 64.0, "Lead times": 11.0, "Order quantities": 11.0, "Shipping times": 1.0, "Shipping carriers": "Carrier B", "Shipping costs": 8.63105218, "Supplier name": "Supplier 1", "Location": "Mumbai", "Lead time": 10.0, "Production volumes": 727.0, "Manufacturing lead time": 27.0, "Manufacturing costs": 9.166849149, "Inspection results": "Pending", "Defect rates": 2.122471619, "Transportation modes": "Air", "Routes": "Route C", "Costs": 602.8984988, "Profit_Margin": 93.42, "Total_Cost": 620.7}, {"Product type": "skincare", "SKU": "SKU53", "Price": 30.34147071, "Availability": 93.0, "Number of products sold": 242.0, "Revenue generated": 8232.334829, "Customer demographics": "Male", "Stock levels": 96.0, "Lead times": 25.0, "Order quantities": 54.0, "Shipping times": 3.0, "Shipping carriers": "Carrier B", "Shipping costs": 1.013486566, "Supplier name": "Supplier 1", "Location": "Delhi", "Lead time": 1.0, "Production volumes": 631.0, "Manufacturing lead time": 17.0, "Manufacturing costs": 83.34405899, "Inspection results": "Pending", "Defect rates": 1.410347576, "Transportation modes": "Air", "Routes": "Route B", "Costs": 750.7378407, "Profit_Margin": 89.86, "Total_Cost": 835.1}, {"Product type": "haircare", "SKU": "SKU54", "Price": 31.14624316, "Availability": 11.0, "Number of products sold": 622.0, "Revenue generated": 6088.02148, "Customer demographics": "Non-binary", "Stock levels": 33.0, "Lead times": 22.0, "Order quantities": 61.0, "Shipping times": 3.0, "Shipping carriers": "Carrier B", "Shipping costs": 4.305103471, "Supplier name": "Supplier 1", "Location": "Kolkata", "Lead time": 26.0, "Production volumes": 497.0, "Manufacturing lead time": 29.0, "Manufacturing costs": 30.18602338, "Inspection results": "Pass", "Defect rates": 2.478771976, "Transportation modes": "Road", "Routes": "Route B", "Costs": 814.0699966, "Profit_Margin": 86.06, "Total_Cost": 848.56}, {"Product type": "haircare", "SKU": "SKU55", "Price": 79.85505834, "Availability": 16.0, "Number of products sold": 701.0, "Revenue generated": 2925.67517, "Customer demographics": "Male", "Stock levels": 97.0, "Lead times": 11.0, "Order quantities": 11.0, "Shipping times": 5.0, "Shipping carriers": "Carrier A", "Shipping costs": 5.014364955, "Supplier name": "Supplier 2", "Location": "Delhi", "Lead time": 27.0, "Production volumes": 918.0, "Manufacturing lead time": 5.0, "Manufacturing costs": 30.32354526, "Inspection results": "Fail", "Defect rates": 4.548919659, "Transportation modes": "Sea", "Routes": "Route B", "Costs": 323.012928, "Profit_Margin": 87.75, "Total_Cost": 358.35}, {"Product type": "skincare", "SKU": "SKU56", "Price": 20.98638604, "Availability": 90.0, "Number of products sold": 93.0, "Revenue generated": 4767.020484, "Customer demographics": "Non-binary", "Stock levels": 25.0, "Lead times": 23.0, "Order quantities": 83.0, "Shipping times": 5.0, "Shipping carriers": "Carrier C", "Shipping costs": 1.774429714, "Supplier name": "Supplier 1", "Location": "Mumbai", "Lead time": 24.0, "Production volumes": 826.0, "Manufacturing lead time": 28.0, "Manufacturing costs": 12.83628457, "Inspection results": "Pass", "Defect rates": 1.173755495, "Transportation modes": "Air", "Routes": "Route B", "Costs": 832.2108087, "Profit_Margin": 82.24, "Total_Cost": 846.82}, {"Product type": "haircare", "SKU": "SKU57", "Price": 49.26320535, "Availability": 65.0, "Number of products sold": 227.0, "Revenue generated": 1605.8669, "Customer demographics": "Unknown", "Stock levels": 5.0, "Lead times": 18.0, "Order quantities": 51.0, "Shipping times": 1.0, "Shipping carriers": "Carrier B", "Shipping costs": 9.160558535, "Supplier name": "Supplier 2", "Location": "Delhi", "Lead time": 21.0, "Production volumes": 588.0, "Manufacturing lead time": 25.0, "Manufacturing costs": 67.77962299, "Inspection results": "Pending", "Defect rates": 2.51117483, "Transportation modes": "Rail", "Routes": "Route A", "Costs": 482.1912386, "Profit_Margin": 65.18, "Total_Cost": 559.13}, {"Product type": "skincare", "SKU": "SKU58", "Price": 59.84156138, "Availability": 81.0, "Number of products sold": 896.0, "Revenue generated": 2021.14981, "Customer demographics": "Non-binary", "Stock levels": 10.0, "Lead times": 5.0, "Order quantities": 44.0, "Shipping times": 7.0, "Shipping carriers": "Carrier A", "Shipping costs": 4.938438565, "Supplier name": "Supplier 3", "Location": "Delhi", "Lead time": 18.0, "Production volumes": 396.0, "Manufacturing lead time": 7.0, "Manufacturing costs": 65.04741509, "Inspection results": "Fail", "Defect rates": 1.73037472, "Transportation modes": "Road", "Routes": "Route B", "Costs": 110.3643352, "Profit_Margin": 91.08, "Total_Cost": 180.35}, {"Product type": "cosmetics", "SKU": "SKU59", "Price": 63.82839835, "Availability": 30.0, "Number of products sold": 484.0, "Revenue generated": 1061.618523, "Customer demographics": "Non-binary", "Stock levels": 100.0, "Lead times": 16.0, "Order quantities": 26.0, "Shipping times": 7.0, "Shipping carriers": "Carrier B", "Shipping costs": 7.293722597, "Supplier name": "Supplier 1", "Location": "Kolkata", "Lead time": 11.0, "Production volumes": 176.0, "Manufacturing lead time": 4.0, "Manufacturing costs": 1.900762244, "Inspection results": "Fail", "Defect rates": 0.447194015, "Transportation modes": "Air", "Routes": "Route A", "Costs": 312.5742736, "Profit_Margin": 69.69, "Total_Cost": 321.77}, {"Product type": "skincare", "SKU": "SKU60", "Price": 17.02802792, "Availability": 16.0, "Number of products sold": 380.0, "Revenue generated": 8864.08435, "Customer demographics": "Female", "Stock levels": 41.0, "Lead times": 27.0, "Order quantities": 72.0, "Shipping times": 8.0, "Shipping carriers": "Carrier C", "Shipping costs": 4.381368158, "Supplier name": "Supplier 4", "Location": "Mumbai", "Lead time": 29.0, "Production volumes": 929.0, "Manufacturing lead time": 24.0, "Manufacturing costs": 87.21305782, "Inspection results": "Fail", "Defect rates": 2.853090617, "Transportation modes": "Rail", "Routes": "Route A", "Costs": 430.169097, "Profit_Margin": 94.11, "Total_Cost": 521.76}, {"Product type": "haircare", "SKU": "SKU61", "Price": 52.0287499, "Availability": 23.0, "Number of products sold": 117.0, "Revenue generated": 6885.589351, "Customer demographics": "Unknown", "Stock levels": 32.0, "Lead times": 23.0, "Order quantities": 36.0, "Shipping times": 7.0, "Shipping carriers": "Carrier C", "Shipping costs": 9.030340423, "Supplier name": "Supplier 4", "Location": "Kolkata", "Lead time": 14.0, "Production volumes": 480.0, "Manufacturing lead time": 12.0, "Manufacturing costs": 78.70239397, "Inspection results": "Fail", "Defect rates": 4.367470538, "Transportation modes": "Air", "Routes": "Route A", "Costs": 164.3665282, "Profit_Margin": 96.34, "Total_Cost": 252.1}, {"Product type": "cosmetics", "SKU": "SKU62", "Price": 72.79635396, "Availability": 89.0, "Number of products sold": 270.0, "Revenue generated": 3899.746834, "Customer demographics": "Unknown", "Stock levels": 86.0, "Lead times": 2.0, "Order quantities": 40.0, "Shipping times": 7.0, "Shipping carriers": "Carrier C", "Shipping costs": 7.291701389, "Supplier name": "Supplier 2", "Location": "Mumbai", "Lead time": 13.0, "Production volumes": 751.0, "Manufacturing lead time": 14.0, "Manufacturing costs": 21.04864273, "Inspection results": "Pass", "Defect rates": 1.874001404, "Transportation modes": "Sea", "Routes": "Route C", "Costs": 320.8465158, "Profit_Margin": 91.05, "Total_Cost": 349.19}, {"Product type": "skincare", "SKU": "SKU63", "Price": 13.01737679, "Availability": 55.0, "Number of products sold": 246.0, "Revenue generated": 4256.949141, "Customer demographics": "Non-binary", "Stock levels": 54.0, "Lead times": 19.0, "Order quantities": 10.0, "Shipping times": 4.0, "Shipping carriers": "Carrier A", "Shipping costs": 2.457933528, "Supplier name": "Supplier 3", "Location": "Bangalore", "Lead time": 18.0, "Production volumes": 736.0, "Manufacturing lead time": 10.0, "Manufacturing costs": 20.07500398, "Inspection results": "Pending", "Defect rates": 3.63284329, "Transportation modes": "Sea", "Routes": "Route A", "Costs": 687.2861779, "Profit_Margin": 83.33, "Total_Cost": 709.82}, {"Product type": "skincare", "SKU": "SKU64", "Price": 89.63409561, "Availability": 11.0, "Number of products sold": 134.0, "Revenue generated": 8458.730878, "Customer demographics": "Female", "Stock levels": 73.0, "Lead times": 27.0, "Order quantities": 75.0, "Shipping times": 6.0, "Shipping carriers": "Carrier C", "Shipping costs": 4.585353468, "Supplier name": "Supplier 1", "Location": "Delhi", "Lead time": 17.0, "Production volumes": 328.0, "Manufacturing lead time": 6.0, "Manufacturing costs": 8.693042426, "Inspection results": "Fail", "Defect rates": 0.159486315, "Transportation modes": "Air", "Routes": "Route C", "Costs": 771.2250847, "Profit_Margin": 90.73, "Total_Cost": 784.5}, {"Product type": "skincare", "SKU": "SKU65", "Price": 33.69771721, "Availability": 72.0, "Number of products sold": 457.0, "Revenue generated": 8354.579686, "Customer demographics": "Male", "Stock levels": 57.0, "Lead times": 24.0, "Order quantities": 54.0, "Shipping times": 8.0, "Shipping carriers": "Carrier C", "Shipping costs": 6.580541348, "Supplier name": "Supplier 5", "Location": "Kolkata", "Lead time": 16.0, "Production volumes": 358.0, "Manufacturing lead time": 21.0, "Manufacturing costs": 1.597222743, "Inspection results": "Fail", "Defect rates": 4.911095955, "Transportation modes": "Rail", "Routes": "Route C", "Costs": 555.8591037, "Profit_Margin": 93.25, "Total_Cost": 564.04}, {"Product type": "skincare", "SKU": "SKU66", "Price": 26.03486977, "Availability": 52.0, "Number of products sold": 704.0, "Revenue generated": 8367.721618, "Customer demographics": "Female", "Stock levels": 13.0, "Lead times": 17.0, "Order quantities": 19.0, "Shipping times": 8.0, "Shipping carriers": "Carrier A", "Shipping costs": 2.216142729, "Supplier name": "Supplier 5", "Location": "Kolkata", "Lead time": 24.0, "Production volumes": 867.0, "Manufacturing lead time": 28.0, "Manufacturing costs": 42.08443674, "Inspection results": "Fail", "Defect rates": 3.448063288, "Transportation modes": "Road", "Routes": "Route A", "Costs": 393.8433486, "Profit_Margin": 94.76, "Total_Cost": 438.14}, {"Product type": "skincare", "SKU": "SKU67", "Price": 87.75543235, "Availability": 16.0, "Number of products sold": 513.0, "Revenue generated": 9473.798033, "Customer demographics": "Unknown", "Stock levels": 12.0, "Lead times": 9.0, "Order quantities": 71.0, "Shipping times": 9.0, "Shipping carriers": "Carrier C", "Shipping costs": 9.147811545, "Supplier name": "Supplier 1", "Location": "Mumbai", "Lead time": 10.0, "Production volumes": 198.0, "Manufacturing lead time": 11.0, "Manufacturing costs": 7.057876147, "Inspection results": "Pass", "Defect rates": 0.131955444, "Transportation modes": "Sea", "Routes": "Route C", "Costs": 169.2718014, "Profit_Margin": 98.04, "Total_Cost": 185.48}, {"Product type": "haircare", "SKU": "SKU68", "Price": 37.93181238, "Availability": 29.0, "Number of products sold": 163.0, "Revenue generated": 3550.218433, "Customer demographics": "Non-binary", "Stock levels": 0.0, "Lead times": 8.0, "Order quantities": 58.0, "Shipping times": 8.0, "Shipping carriers": "Carrier B", "Shipping costs": 1.194251865, "Supplier name": "Supplier 2", "Location": "Bangalore", "Lead time": 2.0, "Production volumes": 375.0, "Manufacturing lead time": 18.0, "Manufacturing costs": 97.11358156, "Inspection results": "Fail", "Defect rates": 1.983467872, "Transportation modes": "Rail", "Routes": "Route A", "Costs": 299.7063031, "Profit_Margin": 88.79, "Total_Cost": 398.01}, {"Product type": "skincare", "SKU": "SKU69", "Price": 54.86552852, "Availability": 62.0, "Number of products sold": 511.0, "Revenue generated": 1752.381087, "Customer demographics": "Non-binary", "Stock levels": 95.0, "Lead times": 1.0, "Order quantities": 27.0, "Shipping times": 3.0, "Shipping carriers": "Carrier B", "Shipping costs": 9.70528679, "Supplier name": "Supplier 4", "Location": "Kolkata", "Lead time": 9.0, "Production volumes": 862.0, "Manufacturing lead time": 7.0, "Manufacturing costs": 77.62776581, "Inspection results": "Pending", "Defect rates": 1.362387989, "Transportation modes": "Air", "Routes": "Route A", "Costs": 207.6632062, "Profit_Margin": 83.17, "Total_Cost": 295.0}, {"Product type": "haircare", "SKU": "SKU70", "Price": 47.91454182, "Availability": 90.0, "Number of products sold": 32.0, "Revenue generated": 7014.887987, "Customer demographics": "Female", "Stock levels": 10.0, "Lead times": 12.0, "Order quantities": 22.0, "Shipping times": 4.0, "Shipping carriers": "Carrier B", "Shipping costs": 6.315717755, "Supplier name": "Supplier 1", "Location": "Bangalore", "Lead time": 22.0, "Production volumes": 775.0, "Manufacturing lead time": 16.0, "Manufacturing costs": 11.44078182, "Inspection results": "Pass", "Defect rates": 1.830575599, "Transportation modes": "Road", "Routes": "Route C", "Costs": 183.2728987, "Profit_Margin": 97.13, "Total_Cost": 201.03}, {"Product type": "cosmetics", "SKU": "SKU71", "Price": 6.381533163, "Availability": 14.0, "Number of products sold": 637.0, "Revenue generated": 8180.337085, "Customer demographics": "Female", "Stock levels": 76.0, "Lead times": 2.0, "Order quantities": 26.0, "Shipping times": 6.0, "Shipping carriers": "Carrier A", "Shipping costs": 9.228190317, "Supplier name": "Supplier 2", "Location": "Bangalore", "Lead time": 2.0, "Production volumes": 258.0, "Manufacturing lead time": 10.0, "Manufacturing costs": 30.66167748, "Inspection results": "Pending", "Defect rates": 2.078750608, "Transportation modes": "Road", "Routes": "Route A", "Costs": 405.1670679, "Profit_Margin": 94.56, "Total_Cost": 445.06}, {"Product type": "cosmetics", "SKU": "SKU72", "Price": 90.20442752, "Availability": 88.0, "Number of products sold": 478.0, "Revenue generated": 2633.121981, "Customer demographics": "Non-binary", "Stock levels": 57.0, "Lead times": 29.0, "Order quantities": 77.0, "Shipping times": 9.0, "Shipping carriers": "Carrier A", "Shipping costs": 6.59961416, "Supplier name": "Supplier 1", "Location": "Bangalore", "Lead time": 21.0, "Production volumes": 152.0, "Manufacturing lead time": 11.0, "Manufacturing costs": 55.7604929, "Inspection results": "Pending", "Defect rates": 3.213329607, "Transportation modes": "Rail", "Routes": "Route B", "Costs": 677.9445698, "Profit_Margin": 71.88, "Total_Cost": 740.3}, {"Product type": "cosmetics", "SKU": "SKU73", "Price": 83.85101768, "Availability": 41.0, "Number of products sold": 375.0, "Revenue generated": 7910.886916, "Customer demographics": "Male", "Stock levels": 17.0, "Lead times": 25.0, "Order quantities": 66.0, "Shipping times": 5.0, "Shipping carriers": "Carrier B", "Shipping costs": 1.512936837, "Supplier name": "Supplier 4", "Location": "Chennai", "Lead time": 13.0, "Production volumes": 444.0, "Manufacturing lead time": 4.0, "Manufacturing costs": 46.8702388, "Inspection results": "Fail", "Defect rates": 4.620546065, "Transportation modes": "Road", "Routes": "Route A", "Costs": 866.4728001, "Profit_Margin": 88.44, "Total_Cost": 914.86}, {"Product type": "haircare", "SKU": "SKU74", "Price": 3.170011414, "Availability": 64.0, "Number of products sold": 904.0, "Revenue generated": 5709.945296, "Customer demographics": "Female", "Stock levels": 41.0, "Lead times": 6.0, "Order quantities": 1.0, "Shipping times": 5.0, "Shipping carriers": "Carrier A", "Shipping costs": 5.23765465, "Supplier name": "Supplier 4", "Location": "Delhi", "Lead time": 1.0, "Production volumes": 919.0, "Manufacturing lead time": 9.0, "Manufacturing costs": 80.58085216, "Inspection results": "Fail", "Defect rates": 0.396612724, "Transportation modes": "Rail", "Routes": "Route A", "Costs": 341.5526568, "Profit_Margin": 92.52, "Total_Cost": 427.37}, {"Product type": "skincare", "SKU": "SKU75", "Price": 92.99688423, "Availability": 29.0, "Number of products sold": 106.0, "Revenue generated": 1889.07359, "Customer demographics": "Non-binary", "Stock levels": 16.0, "Lead times": 20.0, "Order quantities": 56.0, "Shipping times": 10.0, "Shipping carriers": "Carrier C", "Shipping costs": 2.473897761, "Supplier name": "Supplier 1", "Location": "Chennai", "Lead time": 25.0, "Production volumes": 759.0, "Manufacturing lead time": 11.0, "Manufacturing costs": 48.06478264, "Inspection results": "Pass", "Defect rates": 2.030069089, "Transportation modes": "Air", "Routes": "Route C", "Costs": 873.129648, "Profit_Margin": 51.1, "Total_Cost": 923.67}, {"Product type": "haircare", "SKU": "SKU76", "Price": 69.10879955, "Availability": 23.0, "Number of products sold": 241.0, "Revenue generated": 5328.375984, "Customer demographics": "Male", "Stock levels": 38.0, "Lead times": 1.0, "Order quantities": 22.0, "Shipping times": 10.0, "Shipping carriers": "Carrier A", "Shipping costs": 7.054538337, "Supplier name": "Supplier 2", "Location": "Bangalore", "Lead time": 25.0, "Production volumes": 985.0, "Manufacturing lead time": 24.0, "Manufacturing costs": 64.3235978, "Inspection results": "Pending", "Defect rates": 2.180037452, "Transportation modes": "Rail", "Routes": "Route A", "Costs": 997.4134501, "Profit_Margin": 79.94, "Total_Cost": 1068.79}, {"Product type": "haircare", "SKU": "SKU77", "Price": 57.44974296, "Availability": 14.0, "Number of products sold": 359.0, "Revenue generated": 2483.760178, "Customer demographics": "Unknown", "Stock levels": 96.0, "Lead times": 28.0, "Order quantities": 57.0, "Shipping times": 4.0, "Shipping carriers": "Carrier B", "Shipping costs": 6.780946626, "Supplier name": "Supplier 1", "Location": "Kolkata", "Lead time": 26.0, "Production volumes": 334.0, "Manufacturing lead time": 5.0, "Manufacturing costs": 42.95244475, "Inspection results": "Pass", "Defect rates": 3.055141818, "Transportation modes": "Road", "Routes": "Route B", "Costs": 852.5680989, "Profit_Margin": 63.67, "Total_Cost": 902.3}, {"Product type": "haircare", "SKU": "SKU78", "Price": 6.306883176, "Availability": 50.0, "Number of products sold": 946.0, "Revenue generated": 1292.458418, "Customer demographics": "Unknown", "Stock levels": 5.0, "Lead times": 4.0, "Order quantities": 51.0, "Shipping times": 5.0, "Shipping carriers": "Carrier B", "Shipping costs": 8.467049771, "Supplier name": "Supplier 5", "Location": "Mumbai", "Lead time": 25.0, "Production volumes": 858.0, "Manufacturing lead time": 21.0, "Manufacturing costs": 71.12651472, "Inspection results": "Pending", "Defect rates": 4.096881332, "Transportation modes": "Sea", "Routes": "Route C", "Costs": 323.5922034, "Profit_Margin": 68.8, "Total_Cost": 403.19}, {"Product type": "haircare", "SKU": "SKU79", "Price": 57.05703122, "Availability": 56.0, "Number of products sold": 198.0, "Revenue generated": 7888.723268, "Customer demographics": "Non-binary", "Stock levels": 31.0, "Lead times": 25.0, "Order quantities": 20.0, "Shipping times": 1.0, "Shipping carriers": "Carrier B", "Shipping costs": 6.496325364, "Supplier name": "Supplier 3", "Location": "Bangalore", "Lead time": 5.0, "Production volumes": 228.0, "Manufacturing lead time": 12.0, "Manufacturing costs": 57.87090292, "Inspection results": "Pending", "Defect rates": 0.165871627, "Transportation modes": "Air", "Routes": "Route C", "Costs": 351.5042193, "Profit_Margin": 94.73, "Total_Cost": 415.87}, {"Product type": "skincare", "SKU": "SKU80", "Price": 91.12831835, "Availability": 75.0, "Number of products sold": 872.0, "Revenue generated": 8651.672683, "Customer demographics": "Unknown", "Stock levels": 39.0, "Lead times": 14.0, "Order quantities": 41.0, "Shipping times": 2.0, "Shipping carriers": "Carrier C", "Shipping costs": 2.833184679, "Supplier name": "Supplier 3", "Location": "Chennai", "Lead time": 8.0, "Production volumes": 202.0, "Manufacturing lead time": 5.0, "Manufacturing costs": 76.96122802, "Inspection results": "Fail", "Defect rates": 2.849662199, "Transportation modes": "Sea", "Routes": "Route B", "Costs": 787.7798505, "Profit_Margin": 89.97, "Total_Cost": 867.57}, {"Product type": "haircare", "SKU": "SKU81", "Price": 72.81920693, "Availability": 9.0, "Number of products sold": 774.0, "Revenue generated": 4384.4134, "Customer demographics": "Unknown", "Stock levels": 48.0, "Lead times": 6.0, "Order quantities": 8.0, "Shipping times": 5.0, "Shipping carriers": "Carrier B", "Shipping costs": 4.066277502, "Supplier name": "Supplier 3", "Location": "Delhi", "Lead time": 28.0, "Production volumes": 698.0, "Manufacturing lead time": 1.0, "Manufacturing costs": 19.78959294, "Inspection results": "Pending", "Defect rates": 2.547547122, "Transportation modes": "Rail", "Routes": "Route B", "Costs": 276.7783359, "Profit_Margin": 93.14, "Total_Cost": 300.63}, {"Product type": "skincare", "SKU": "SKU82", "Price": 17.03493074, "Availability": 13.0, "Number of products sold": 336.0, "Revenue generated": 2943.381868, "Customer demographics": "Unknown", "Stock levels": 42.0, "Lead times": 19.0, "Order quantities": 72.0, "Shipping times": 1.0, "Shipping carriers": "Carrier A", "Shipping costs": 4.708181874, "Supplier name": "Supplier 2", "Location": "Mumbai", "Lead time": 6.0, "Production volumes": 955.0, "Manufacturing lead time": 26.0, "Manufacturing costs": 4.465278435, "Inspection results": "Pending", "Defect rates": 4.137877049, "Transportation modes": "Road", "Routes": "Route C", "Costs": 589.9785556, "Profit_Margin": 79.64, "Total_Cost": 599.15}, {"Product type": "haircare", "SKU": "SKU83", "Price": 68.91124621, "Availability": 82.0, "Number of products sold": 663.0, "Revenue generated": 2411.754632, "Customer demographics": "Unknown", "Stock levels": 65.0, "Lead times": 24.0, "Order quantities": 7.0, "Shipping times": 8.0, "Shipping carriers": "Carrier B", "Shipping costs": 4.949839578, "Supplier name": "Supplier 1", "Location": "Bangalore", "Lead time": 20.0, "Production volumes": 443.0, "Manufacturing lead time": 5.0, "Manufacturing costs": 97.7305938, "Inspection results": "Fail", "Defect rates": 0.773006134, "Transportation modes": "Road", "Routes": "Route A", "Costs": 682.9710182, "Profit_Margin": 67.42, "Total_Cost": 785.65}, {"Product type": "haircare", "SKU": "SKU84", "Price": 89.10436729, "Availability": 99.0, "Number of products sold": 618.0, "Revenue generated": 2048.2901, "Customer demographics": "Unknown", "Stock levels": 73.0, "Lead times": 26.0, "Order quantities": 80.0, "Shipping times": 10.0, "Shipping carriers": "Carrier A", "Shipping costs": 8.381615625, "Supplier name": "Supplier 5", "Location": "Chennai", "Lead time": 24.0, "Production volumes": 589.0, "Manufacturing lead time": 22.0, "Manufacturing costs": 33.80863651, "Inspection results": "Pass", "Defect rates": 4.843456577, "Transportation modes": "Air", "Routes": "Route B", "Costs": 465.457006, "Profit_Margin": 75.22, "Total_Cost": 507.65}, {"Product type": "cosmetics", "SKU": "SKU85", "Price": 76.96299442, "Availability": 83.0, "Number of products sold": 25.0, "Revenue generated": 8684.613059, "Customer demographics": "Female", "Stock levels": 15.0, "Lead times": 18.0, "Order quantities": 66.0, "Shipping times": 2.0, "Shipping carriers": "Carrier C", "Shipping costs": 8.249168705, "Supplier name": "Supplier 5", "Location": "Chennai", "Lead time": 4.0, "Production volumes": 211.0, "Manufacturing lead time": 2.0, "Manufacturing costs": 69.92934552, "Inspection results": "Fail", "Defect rates": 1.374429, "Transportation modes": "Road", "Routes": "Route B", "Costs": 842.68683, "Profit_Margin": 89.4, "Total_Cost": 920.87}, {"Product type": "skincare", "SKU": "SKU86", "Price": 19.99817694, "Availability": 18.0, "Number of products sold": 223.0, "Revenue generated": 1229.591029, "Customer demographics": "Unknown", "Stock levels": 32.0, "Lead times": 14.0, "Order quantities": 22.0, "Shipping times": 6.0, "Shipping carriers": "Carrier B", "Shipping costs": 1.45430531, "Supplier name": "Supplier 1", "Location": "Mumbai", "Lead time": 4.0, "Production volumes": 569.0, "Manufacturing lead time": 18.0, "Manufacturing costs": 74.60897, "Inspection results": "Pass", "Defect rates": 2.051512931, "Transportation modes": "Rail", "Routes": "Route A", "Costs": 264.2548898, "Profit_Margin": 72.32, "Total_Cost": 340.32}, {"Product type": "haircare", "SKU": "SKU87", "Price": 80.41403665, "Availability": 24.0, "Number of products sold": 79.0, "Revenue generated": 5133.846701, "Customer demographics": "Male", "Stock levels": 5.0, "Lead times": 7.0, "Order quantities": 55.0, "Shipping times": 10.0, "Shipping carriers": "Carrier A", "Shipping costs": 6.575803798, "Supplier name": "Supplier 3", "Location": "Chennai", "Lead time": 27.0, "Production volumes": 523.0, "Manufacturing lead time": 17.0, "Manufacturing costs": 28.69699682, "Inspection results": "Fail", "Defect rates": 3.693737788, "Transportation modes": "Sea", "Routes": "Route B", "Costs": 879.3592177, "Profit_Margin": 82.18, "Total_Cost": 914.63}, {"Product type": "cosmetics", "SKU": "SKU88", "Price": 75.27040698, "Availability": 58.0, "Number of products sold": 737.0, "Revenue generated": 9444.742033, "Customer demographics": "Male", "Stock levels": 60.0, "Lead times": 18.0, "Order quantities": 85.0, "Shipping times": 7.0, "Shipping carriers": "Carrier A", "Shipping costs": 3.801253133, "Supplier name": "Supplier 2", "Location": "Mumbai", "Lead time": 21.0, "Production volumes": 953.0, "Manufacturing lead time": 11.0, "Manufacturing costs": 68.18491906, "Inspection results": "Pending", "Defect rates": 0.722204402, "Transportation modes": "Sea", "Routes": "Route A", "Costs": 103.916248, "Profit_Margin": 98.14, "Total_Cost": 175.9}, {"Product type": "cosmetics", "SKU": "SKU89", "Price": 97.76008558, "Availability": 10.0, "Number of products sold": 134.0, "Revenue generated": 5924.682567, "Customer demographics": "Unknown", "Stock levels": 90.0, "Lead times": 1.0, "Order quantities": 27.0, "Shipping times": 8.0, "Shipping carriers": "Carrier B", "Shipping costs": 9.929816245, "Supplier name": "Supplier 1", "Location": "Kolkata", "Lead time": 23.0, "Production volumes": 370.0, "Manufacturing lead time": 11.0, "Manufacturing costs": 46.60387338, "Inspection results": "Pending", "Defect rates": 1.907665734, "Transportation modes": "Rail", "Routes": "Route B", "Costs": 517.4999739, "Profit_Margin": 90.31, "Total_Cost": 574.03}, {"Product type": "skincare", "SKU": "SKU90", "Price": 13.8819135, "Availability": 56.0, "Number of products sold": 320.0, "Revenue generated": 9592.63357, "Customer demographics": "Non-binary", "Stock levels": 66.0, "Lead times": 18.0, "Order quantities": 96.0, "Shipping times": 7.0, "Shipping carriers": "Carrier B", "Shipping costs": 7.674430708, "Supplier name": "Supplier 3", "Location": "Bangalore", "Lead time": 8.0, "Production volumes": 585.0, "Manufacturing lead time": 8.0, "Manufacturing costs": 85.67596334, "Inspection results": "Pass", "Defect rates": 1.219382224, "Transportation modes": "Rail", "Routes": "Route B", "Costs": 990.0784725, "Profit_Margin": 88.71, "Total_Cost": 1083.43}, {"Product type": "cosmetics", "SKU": "SKU91", "Price": 62.11196546, "Availability": 90.0, "Number of products sold": 916.0, "Revenue generated": 1935.206794, "Customer demographics": "Male", "Stock levels": 98.0, "Lead times": 22.0, "Order quantities": 85.0, "Shipping times": 7.0, "Shipping carriers": "Carrier B", "Shipping costs": 7.471514084, "Supplier name": "Supplier 4", "Location": "Delhi", "Lead time": 5.0, "Production volumes": 207.0, "Manufacturing lead time": 28.0, "Manufacturing costs": 39.7728825, "Inspection results": "Pending", "Defect rates": 0.626001858, "Transportation modes": "Rail", "Routes": "Route B", "Costs": 996.778315, "Profit_Margin": 46.05, "Total_Cost": 1044.02}, {"Product type": "cosmetics", "SKU": "SKU92", "Price": 47.71423308, "Availability": 44.0, "Number of products sold": 276.0, "Revenue generated": 2100.129755, "Customer demographics": "Male", "Stock levels": 90.0, "Lead times": 25.0, "Order quantities": 10.0, "Shipping times": 8.0, "Shipping carriers": "Carrier B", "Shipping costs": 4.469500026, "Supplier name": "Supplier 2", "Location": "Mumbai", "Lead time": 4.0, "Production volumes": 671.0, "Manufacturing lead time": 29.0, "Manufacturing costs": 62.6126904, "Inspection results": "Pass", "Defect rates": 0.333431825, "Transportation modes": "Rail", "Routes": "Route B", "Costs": 230.0927825, "Profit_Margin": 85.85, "Total_Cost": 297.17}, {"Product type": "haircare", "SKU": "SKU93", "Price": 69.290831, "Availability": 88.0, "Number of products sold": 114.0, "Revenue generated": 4531.402134, "Customer demographics": "Unknown", "Stock levels": 63.0, "Lead times": 17.0, "Order quantities": 66.0, "Shipping times": 1.0, "Shipping carriers": "Carrier C", "Shipping costs": 7.006432059, "Supplier name": "Supplier 4", "Location": "Chennai", "Lead time": 21.0, "Production volumes": 824.0, "Manufacturing lead time": 20.0, "Manufacturing costs": 35.63365234, "Inspection results": "Fail", "Defect rates": 4.165781795, "Transportation modes": "Air", "Routes": "Route A", "Costs": 823.5238459, "Profit_Margin": 80.89, "Total_Cost": 866.16}, {"Product type": "cosmetics", "SKU": "SKU94", "Price": 3.037688725, "Availability": 97.0, "Number of products sold": 987.0, "Revenue generated": 7888.356547, "Customer demographics": "Unknown", "Stock levels": 77.0, "Lead times": 26.0, "Order quantities": 72.0, "Shipping times": 9.0, "Shipping carriers": "Carrier B", "Shipping costs": 6.942945942, "Supplier name": "Supplier 2", "Location": "Delhi", "Lead time": 12.0, "Production volumes": 908.0, "Manufacturing lead time": 14.0, "Manufacturing costs": 60.38737861, "Inspection results": "Pass", "Defect rates": 1.463607498, "Transportation modes": "Rail", "Routes": "Route B", "Costs": 846.665257, "Profit_Margin": 88.41, "Total_Cost": 914.0}, {"Product type": "haircare", "SKU": "SKU95", "Price": 77.90392722, "Availability": 65.0, "Number of products sold": 672.0, "Revenue generated": 7386.363944, "Customer demographics": "Unknown", "Stock levels": 15.0, "Lead times": 14.0, "Order quantities": 26.0, "Shipping times": 9.0, "Shipping carriers": "Carrier B", "Shipping costs": 8.63033887, "Supplier name": "Supplier 4", "Location": "Mumbai", "Lead time": 18.0, "Production volumes": 450.0, "Manufacturing lead time": 26.0, "Manufacturing costs": 58.89068577, "Inspection results": "Pending", "Defect rates": 1.21088213, "Transportation modes": "Air", "Routes": "Route A", "Costs": 778.8642414, "Profit_Margin": 88.54, "Total_Cost": 846.39}, {"Product type": "cosmetics", "SKU": "SKU96", "Price": 24.42313142, "Availability": 29.0, "Number of products sold": 324.0, "Revenue generated": 7698.424766, "Customer demographics": "Non-binary", "Stock levels": 67.0, "Lead times": 2.0, "Order quantities": 32.0, "Shipping times": 3.0, "Shipping carriers": "Carrier C", "Shipping costs": 5.352878044, "Supplier name": "Supplier 3", "Location": "Mumbai", "Lead time": 28.0, "Production volumes": 648.0, "Manufacturing lead time": 28.0, "Manufacturing costs": 17.80375633, "Inspection results": "Pending", "Defect rates": 3.872047681, "Transportation modes": "Road", "Routes": "Route A", "Costs": 188.7421411, "Profit_Margin": 97.25, "Total_Cost": 211.9}, {"Product type": "haircare", "SKU": "SKU97", "Price": 3.526111259, "Availability": 56.0, "Number of products sold": 62.0, "Revenue generated": 4370.91658, "Customer demographics": "Male", "Stock levels": 46.0, "Lead times": 19.0, "Order quantities": 4.0, "Shipping times": 9.0, "Shipping carriers": "Carrier A", "Shipping costs": 7.904845611, "Supplier name": "Supplier 4", "Location": "Mumbai", "Lead time": 10.0, "Production volumes": 535.0, "Manufacturing lead time": 13.0, "Manufacturing costs": 65.76515593, "Inspection results": "Fail", "Defect rates": 3.376237835, "Transportation modes": "Road", "Routes": "Route A", "Costs": 540.1324229, "Profit_Margin": 85.96, "Total_Cost": 613.8}, {"Product type": "skincare", "SKU": "SKU98", "Price": 19.75460487, "Availability": 43.0, "Number of products sold": 913.0, "Revenue generated": 8525.95256, "Customer demographics": "Female", "Stock levels": 53.0, "Lead times": 1.0, "Order quantities": 27.0, "Shipping times": 7.0, "Shipping carriers": "Carrier B", "Shipping costs": 1.409801095, "Supplier name": "Supplier 5", "Location": "Chennai", "Lead time": 28.0, "Production volumes": 581.0, "Manufacturing lead time": 9.0, "Manufacturing costs": 5.604690864, "Inspection results": "Pending", "Defect rates": 2.908122169, "Transportation modes": "Rail", "Routes": "Route A", "Costs": 882.1988635, "Profit_Margin": 89.57, "Total_Cost": 889.21}, {"Product type": "haircare", "SKU": "SKU99", "Price": 68.5178327, "Availability": 17.0, "Number of products sold": 627.0, "Revenue generated": 9185.185829, "Customer demographics": "Unknown", "Stock levels": 55.0, "Lead times": 8.0, "Order quantities": 59.0, "Shipping times": 6.0, "Shipping carriers": "Carrier B", "Shipping costs": 1.311023756, "Supplier name": "Supplier 2", "Location": "Chennai", "Lead time": 29.0, "Production volumes": 921.0, "Manufacturing lead time": 2.0, "Manufacturing costs": 38.07289852, "Inspection results": "Fail", "Defect rates": 0.346027291, "Transportation modes": "Rail", "Routes": "Route B", "Costs": 210.743009, "Profit_Margin": 97.28, "Total_Cost": 250.13}];
+
+const CLUSTER_COLORS = ['#e8440a','#1a6bff','#00c896','#f5a623','#a855f7','#ec4899'];
+
+// ── HELPERS ────────────────────────────────────
+function vals(key, filter) {
+  let d = filter ? RAW.filter(r => r['Product type'] === filter) : RAW;
+  return d.map(r => +r[key]).filter(v => isFinite(v));
+}
+
+function stat(arr) {
+  const s = [...arr].sort((a,b)=>a-b);
+  const n = s.length;
+  const mean = s.reduce((a,b)=>a+b,0)/n;
+  const median = n%2===0?(s[n/2-1]+s[n/2])/2:s[Math.floor(n/2)];
+  const q1 = s[Math.floor(n*0.25)];
+  const q3 = s[Math.floor(n*0.75)];
+  const iqr = q3 - q1;
+  const variance = s.reduce((a,b)=>a+(b-mean)**2,0)/n;
+  const std = Math.sqrt(variance);
+  const min = s[0], max = s[n-1];
+  return {mean,median,q1,q3,iqr,std,variance,min,max,n};
+}
+
+function linReg(xs,ys) {
+  const n=xs.length, mx=xs.reduce((a,b)=>a+b)/n, my=ys.reduce((a,b)=>a+b)/n;
+  let ssxy=0,ssxx=0,ssyy=0;
+  for(let i=0;i<n;i++){ssxy+=(xs[i]-mx)*(ys[i]-my);ssxx+=(xs[i]-mx)**2;ssyy+=(ys[i]-my)**2;}
+  const m=ssxy/ssxx, b=my-m*mx;
+  const r2=ssxx===0?0:ssxy**2/(ssxx*ssyy);
+  const se=Math.sqrt(Math.max(0,(ssyy-m*ssxy)/(n-2)));
+  return {m,b,r2,se,mx,my};
+}
+
+function fmtN(n,d=2){return isFinite(n)?n.toFixed(d):'-';}
+function fmtK(n){return n>=1000?(n/1000).toFixed(1)+'K':n.toFixed(1);}
+
+// ── CHART REGISTRY ────────────────────────────────────
+const charts = {};
+function destroyChart(id) { if(charts[id]){charts[id].destroy();delete charts[id];} }
+
+// ══════════════════════════════════════════════
+// NAV
+// ══════════════════════════════════════════════
+function showSection(i) {
+  document.querySelectorAll('.section').forEach((s,j)=>{
+    s.classList.toggle('active',j===i);
+  });
+  document.querySelectorAll('.nav-btn').forEach((b,j)=>{
+    b.classList.toggle('active',j===i);
+  });
+  if(i===0) drawBoxPlots();
+  if(i===1) runRegression();
+  if(i===2) runSampling();
+  if(i===3) runClustering();
+  if(i===4) runDistribution();
+}
+
+// ══════════════════════════════════════════════
+// SECTION 1: BOX PLOT (SVG)
+// ══════════════════════════════════════════════
+function drawBoxPlots() {
+  const metric = document.getElementById('bp-metric').value;
+  const group  = document.getElementById('bp-group').value;
+  const groups = [...new Set(RAW.map(r=>r[group]))].sort();
+  const svg = document.getElementById('boxplot-svg');
+  const W = svg.clientWidth || 700, H = 320;
+  const pad = {l:60,r:20,t:30,b:50};
+  const innerW = W - pad.l - pad.r, innerH = H - pad.t - pad.b;
+
+  const groupData = groups.map(g => ({
+    label: g,
+    values: RAW.filter(r=>r[group]===g).map(r=>+r[metric]).filter(isFinite)
+  }));
+
+  const allVals = groupData.flatMap(g=>g.values);
+  const allStat = stat(allVals);
+  const globalMin = allStat.min, globalMax = allStat.max;
+  const range = globalMax - globalMin || 1;
+
+  function yScale(v) {
+    return pad.t + innerH - ((v - globalMin) / range) * innerH;
+  }
+
+  const bw = Math.min(60, innerW / groups.length * 0.55);
+  let svgContent = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">`;
+  svgContent += `<rect width="${W}" height="${H}" fill="#fff"/>`;
+
+  // Y axis
+  const yticks = 5;
+  for(let i=0;i<=yticks;i++) {
+    const v = globalMin + (range/yticks)*i;
+    const y = yScale(v);
+    svgContent += `<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="#2a2d36" stroke-width="1"/>`;
+    svgContent += `<text x="${pad.l-6}" y="${y+4}" text-anchor="end" font-size="10" fill="#999" font-family="'Space Mono',monospace">${fmtK(v)}</text>`;
+  }
+
+  // X axis label
+  svgContent += `<text x="${W/2}" y="${H-4}" text-anchor="middle" font-size="11" fill="#999" font-family="'DM Sans',sans-serif">${group}</text>`;
+  svgContent += `<text x="14" y="${H/2}" text-anchor="middle" font-size="11" fill="#999" font-family="'DM Sans',sans-serif" transform="rotate(-90,14,${H/2})">${metric}</text>`;
+
+  const colors = ['#1a6bff','#e8440a','#00c896','#f5a623','#a855f7'];
+  let outlierRows = '';
+  let statsHtml = '';
+
+  groupData.forEach((g, gi) => {
+    if(!g.values.length) return;
+    const s = stat(g.values);
+    const x = pad.l + (gi + 0.5) * (innerW / groups.length);
+    const color = colors[gi % colors.length];
+    const fence_lo = s.q1 - 1.5 * s.iqr;
+    const fence_hi = s.q3 + 1.5 * s.iqr;
+    const whisker_lo = Math.max(Math.min(...g.values.filter(v=>v>=fence_lo)), fence_lo);
+    const whisker_hi = Math.min(Math.max(...g.values.filter(v=>v<=fence_hi)), fence_hi);
+    const outliers = g.values.filter(v => v < fence_lo || v > fence_hi);
+
+    // Box
+    const yq3 = yScale(s.q3), yq1 = yScale(s.q1), ymed = yScale(s.median);
+    const ywl = yScale(whisker_lo), ywh = yScale(whisker_hi);
+
+    svgContent += `<rect x="${x-bw/2}" y="${yq3}" width="${bw}" height="${yq1-yq3}" fill="${color}22" stroke="${color}" stroke-width="1.5"/>`;
+    svgContent += `<line x1="${x-bw/2}" y1="${ymed}" x2="${x+bw/2}" y2="${ymed}" stroke="${color}" stroke-width="2.5"/>`;
+    // Whiskers
+    svgContent += `<line x1="${x}" y1="${yq3}" x2="${x}" y2="${ywh}" stroke="${color}" stroke-width="1.5" stroke-dasharray="3,2"/>`;
+    svgContent += `<line x1="${x}" y1="${yq1}" x2="${x}" y2="${ywl}" stroke="${color}" stroke-width="1.5" stroke-dasharray="3,2"/>`;
+    svgContent += `<line x1="${x-bw/4}" y1="${ywh}" x2="${x+bw/4}" y2="${ywh}" stroke="${color}" stroke-width="1.5"/>`;
+    svgContent += `<line x1="${x-bw/4}" y1="${ywl}" x2="${x+bw/4}" y2="${ywl}" stroke="${color}" stroke-width="1.5"/>`;
+    // Outliers
+    outliers.forEach(ov => {
+      svgContent += `<circle cx="${x}" cy="${yScale(ov)}" r="4" fill="none" stroke="${color}" stroke-width="1.5"/>`;
+      outlierRows += `<div class="stat-row"><span class="stat-key">${g.label}</span><span class="stat-val">${fmtN(ov,2)}</span></div>`;
+    });
+    // Label
+    svgContent += `<text x="${x}" y="${H-pad.b+18}" text-anchor="middle" font-size="11" fill="${color}" font-family="'DM Sans',sans-serif" font-weight="600">${g.label}</text>`;
+
+    statsHtml += `<div class="stat-row"><span class="stat-key">${g.label}</span><span style="color:${color};font-weight:700">${fmtN(s.median,1)} med</span></div>`;
+    statsHtml += `<div class="stat-row"><span class="stat-key">&nbsp;&nbsp;IQR</span><span class="stat-val">${fmtN(s.iqr,1)}</span></div>`;
+  });
+
+  svgContent += '</svg>';
+  svg.outerHTML = `<svg class="boxplot-svg" id="boxplot-svg">${svgContent.replace('<svg','<g').replace('</svg>','</g>')}</svg>`;
+  // simpler approach:
+  svg.innerHTML = svgContent.match(/<g[^>]*>[\s\S]*<\/g>/)?.[0] || '';
+  document.getElementById('boxplot-svg').innerHTML = svgContent.replace(/^<svg[^>]*>/,'').replace(/<\/svg>$/,'');
+
+  document.getElementById('outlier-table').innerHTML = outlierRows || '<p style="color:#999;font-size:12px">No outliers detected</p>';
+  document.getElementById('bp-stats').innerHTML = statsHtml;
+}
+
+// ══════════════════════════════════════════════
+// SECTION 2: LINEAR REGRESSION
+// ══════════════════════════════════════════════
+let lrModel = null;
+
+function runRegression() {
+  const xKey = document.getElementById('lr-x').value;
+  const yKey = document.getElementById('lr-y').value;
+  const filt = document.getElementById('lr-filter').value;
+  const data = filt==='all'?RAW:RAW.filter(r=>r['Product type']===filt);
+  const xs = data.map(r=>+r[xKey]).filter(isFinite);
+  const ys = data.map(r=>+r[yKey]).filter(isFinite);
+  const pairs = data.map(r=>({x:+r[xKey],y:+r[yKey],sku:r.SKU,pt:r['Product type']})).filter(p=>isFinite(p.x)&&isFinite(p.y));
+
+  lrModel = linReg(pairs.map(p=>p.x), pairs.map(p=>p.y));
+  const {m,b,r2,se} = lrModel;
+  const xRange = [Math.min(...pairs.map(p=>p.x)), Math.max(...pairs.map(p=>p.x))];
+
+  destroyChart('lr');
+  const ctx = document.getElementById('lr-chart').getContext('2d');
+  const ptColors = {'haircare':'#1a6bff','skincare':'#00c896','cosmetics':'#f5a623'};
+  charts['lr'] = new Chart(ctx, {
+    type:'scatter',
+    data:{
+      datasets:[
+        {label:'SKUs', data:pairs.map(p=>({x:p.x,y:p.y})),
+          backgroundColor:pairs.map(p=>ptColors[p.pt]||'#999'),
+          pointRadius:5,pointHoverRadius:7,borderWidth:0},
+        {label:'Regression Line', data:[{x:xRange[0],y:m*xRange[0]+b},{x:xRange[1],y:m*xRange[1]+b}],
+          type:'line',borderColor:'#e8440a',borderWidth:2.5,pointRadius:0,fill:false}
+      ]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{display:true,position:'top',labels:{font:{family:'Space Mono',size:10}}},
+               tooltip:{callbacks:{label:d=>d.datasetIndex===0?`(${fmtN(d.parsed.x,1)}, ${fmtN(d.parsed.y,1)})`:null}}},
+      scales:{
+        x:{title:{display:true,text:xKey,font:{family:'DM Sans'}},grid:{color:'#2a2d36'}},
+        y:{title:{display:true,text:yKey,font:{family:'DM Sans'}},grid:{color:'#2a2d36'}}
+      }
+    }
+  });
+
+  // Residuals
+  const residuals = pairs.map(p=>({x:p.x, y:p.y-(m*p.x+b)}));
+  destroyChart('res');
+  const ctx2 = document.getElementById('residuals-chart').getContext('2d');
+  charts['res'] = new Chart(ctx2,{
+    type:'scatter',
+    data:{datasets:[
+      {label:'Residuals', data:residuals, backgroundColor:'rgba(26,107,255,0.4)', pointRadius:4},
+      {label:'Zero line', data:[{x:xRange[0],y:0},{x:xRange[1],y:0}], type:'line', borderColor:'#e8440a', borderWidth:1.5, pointRadius:0, fill:false}
+    ]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{
+      x:{title:{display:true,text:xKey},grid:{color:'#2a2d36'}},
+      y:{title:{display:true,text:'Residual'},grid:{color:'#2a2d36'}}
+    }}
+  });
+
+  document.getElementById('lr-formula').textContent = `ŷ = ${fmtN(m,4)}·x + (${fmtN(b,2)})`;
+  document.getElementById('lr-stats').innerHTML = `
+    <div class="stat-row"><span class="stat-key">Slope (m)</span><span class="stat-val">${fmtN(m,4)}</span></div>
+    <div class="stat-row"><span class="stat-key">Intercept (b)</span><span class="stat-val">${fmtN(b,2)}</span></div>
+    <div class="stat-row"><span class="stat-key">R² (fit)</span><span class="stat-val">${fmtN(r2,4)}</span></div>
+    <div class="stat-row"><span class="stat-key">Std Error</span><span class="stat-val">${fmtN(se,2)}</span></div>
+    <div class="stat-row"><span class="stat-key">n (samples)</span><span class="stat-val">${pairs.length}</span></div>
+    <div class="stat-row"><span class="stat-key">Correlation r</span><span class="stat-val">${fmtN(Math.sign(m)*Math.sqrt(Math.abs(r2)),3)}</span></div>
+  `;
+  updatePrediction();
+}
+
+function updatePrediction() {
+  if(!lrModel) return;
+  const xVal = parseFloat(document.getElementById('lr-input').value);
+  if(isNaN(xVal)) { document.getElementById('lr-pred').textContent = '—'; return; }
+  const pred = lrModel.m * xVal + lrModel.b;
+  document.getElementById('lr-pred').textContent = fmtN(pred,2);
+}
+
+// ══════════════════════════════════════════════
+// SECTION 3: SAMPLING
+// ══════════════════════════════════════════════
+function runSampling() {
+  const n = +document.getElementById('sample-size').value;
+  const metric = document.getElementById('samp-metric').value;
+  const stratCol = document.getElementById('strat-col').value;
+  const allVals = RAW.map(r=>+r[metric]).filter(isFinite);
+  const popMean = allVals.reduce((a,b)=>a+b)/allVals.length;
+  const popStd = Math.sqrt(allVals.reduce((a,v)=>a+(v-popMean)**2,0)/allVals.length);
+
+  // SRS
+  const shuffled = [...RAW].sort(()=>Math.random()-0.5);
+  const srs = shuffled.slice(0,n);
+  const srsVals = srs.map(r=>+r[metric]);
+  const srsMean = srsVals.reduce((a,b)=>a+b)/n;
+
+  // Systematic
+  const k = Math.max(1, Math.floor(RAW.length/n));
+  const start = Math.floor(Math.random()*k);
+  const sys = [];
+  for(let i=start;i<RAW.length && sys.length<n;i+=k) sys.push(RAW[i]);
+  const sysVals = sys.map(r=>+r[metric]);
+  const sysMean = sysVals.reduce((a,b)=>a+b)/sysVals.length;
+
+  // Stratified
+  const strats = [...new Set(RAW.map(r=>r[stratCol]))];
+  const strat = [];
+  strats.forEach(s => {
+    const group = RAW.filter(r=>r[stratCol]===s);
+    const take = Math.max(1,Math.round(n * group.length / RAW.length));
+    const sh = [...group].sort(()=>Math.random()-0.5);
+    strat.push(...sh.slice(0,take));
+  });
+  const stratSample = strat.slice(0,n);
+  const stratVals = stratSample.map(r=>+r[metric]);
+  const stratMean = stratVals.reduce((a,b)=>a+b)/stratVals.length;
+
+  function renderTags(container, sample, selected) {
+    container.innerHTML = sample.map(r=>`<span class="sku-tag selected">${r.SKU}</span>`).join('');
+  }
+
+  renderTags(document.getElementById('srs-tags'), srs, true);
+  renderTags(document.getElementById('sys-tags'), sys, true);
+  renderTags(document.getElementById('strat-tags'), stratSample, true);
+
+  function sampleStats(mean, vs, label) {
+    const err = Math.abs(mean - popMean);
+    return `<div style="color:#999">Mean: <b style="color:#1a6bff">${fmtN(mean,2)}</b><br>Error vs Pop: <b style="color:${err<popStd*0.2?'#00c896':'#e8440a'}">${fmtN(err,2)}</b></div>`;
+  }
+  document.getElementById('srs-stats').innerHTML = sampleStats(srsMean, srsVals);
+  document.getElementById('sys-stats').innerHTML = sampleStats(sysMean, sysVals);
+  document.getElementById('strat-stats').innerHTML = sampleStats(stratMean, stratVals);
+
+  destroyChart('samp');
+  const ctx = document.getElementById('samp-chart').getContext('2d');
+  charts['samp'] = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels:['Population','Simple Random','Systematic','Stratified'],
+      datasets:[{
+        label:`Mean ${metric}`,
+        data:[popMean,srsMean,sysMean,stratMean],
+        backgroundColor:['#1a6bff44','#e8440a','#00c896','#f5a623'],
+        borderColor:['#1a6bff','#e8440a','#00c896','#f5a623'],
+        borderWidth:2
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:d=>`Mean: ${fmtN(d.parsed.y,2)}`}}},
+      scales:{y:{title:{display:true,text:`Mean ${metric}`},grid:{color:'#2a2d36'}}}
+    }
+  });
+}
+
+// ══════════════════════════════════════════════
+// SECTION 4: K-MEANS CLUSTERING
+// ══════════════════════════════════════════════
+function kMeans(points, k, maxIter) {
+  let centroids = points.sort(()=>Math.random()-0.5).slice(0,k).map(p=>({...p}));
+  let assignments = new Array(points.length).fill(0);
+  for(let iter=0;iter<maxIter;iter++) {
+    const newAssign = points.map(p=>{
+      let minD=Infinity,best=0;
+      centroids.forEach((c,i)=>{
+        const d=Math.sqrt((p.x-c.x)**2+(p.y-c.y)**2);
+        if(d<minD){minD=d;best=i;}
+      });
+      return best;
+    });
+    if(newAssign.every((a,i)=>a===assignments[i])) break;
+    assignments=newAssign;
+    centroids = centroids.map((_,ci)=>{
+      const pts = points.filter((_,i)=>assignments[i]===ci);
+      if(!pts.length) return centroids[ci];
+      return {x:pts.reduce((a,p)=>a+p.x,0)/pts.length, y:pts.reduce((a,p)=>a+p.y,0)/pts.length};
+    });
+  }
+  return {assignments, centroids};
+}
+
+function normalize(arr) {
+  const mn=Math.min(...arr),mx=Math.max(...arr),r=mx-mn||1;
+  return arr.map(v=>(v-mn)/r);
+}
+
+function runClustering() {
+  const xKey=document.getElementById('cl-x').value;
+  const yKey=document.getElementById('cl-y').value;
+  const k=+document.getElementById('k-slider').value;
+  const maxIter=+document.getElementById('max-iter').value;
+
+  const xs=RAW.map(r=>+r[xKey]);
+  const ys=RAW.map(r=>+r[yKey]);
+  const xn=normalize(xs), yn=normalize(ys);
+  const points=xn.map((x,i)=>({x,y:yn[i],origX:xs[i],origY:ys[i],sku:RAW[i].SKU,pt:RAW[i]['Product type']}));
+  const {assignments,centroids}=kMeans(points,k,maxIter);
+
+  // Scatter
+  destroyChart('cl');
+  const ctx=document.getElementById('cl-chart').getContext('2d');
+  const datasets=[];
+  for(let ci=0;ci<k;ci++){
+    const pts=points.filter((_,i)=>assignments[i]===ci);
+    datasets.push({
+      label:`Cluster ${ci+1}`,
+      data:pts.map(p=>({x:p.origX,y:p.origY})),
+      backgroundColor:CLUSTER_COLORS[ci]+'aa',
+      borderColor:CLUSTER_COLORS[ci],
+      pointRadius:6,borderWidth:1.5
+    });
+  }
+  // Centroids
+  datasets.push({
+    label:'Centroids',
+    data:centroids.map(c=>({
+      x:xs.reduce((a,v,i)=>a+v,0)/xs.length + (c.x-0.5)*(Math.max(...xs)-Math.min(...xs)),
+      y:ys.reduce((a,v,i)=>a+v,0)/ys.length + (c.y-0.5)*(Math.max(...ys)-Math.min(...ys))
+    })),
+    backgroundColor:'#16181f',borderColor:'#e0ddd8',pointRadius:10,pointStyle:'rectRot',borderWidth:2.5
+  });
+
+  charts['cl']=new Chart(ctx,{
+    type:'scatter',
+    data:{datasets},
+    options:{
+      responsive:true,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{title:{display:true,text:xKey},grid:{color:'#2a2d36'}},
+        y:{title:{display:true,text:yKey},grid:{color:'#2a2d36'}}
+      }
+    }
+  });
+
+  // Legend
+  const legend=document.getElementById('cl-legend');
+  legend.innerHTML=Array.from({length:k},(_,i)=>
+    `<div class="legend-item"><div class="legend-dot" style="background:${CLUSTER_COLORS[i]}"></div>Cluster ${i+1} (${assignments.filter(a=>a===i).length} SKUs)</div>`
+  ).join('');
+
+  // Pie
+  const sizes=Array.from({length:k},(_,i)=>assignments.filter(a=>a===i).length);
+  destroyChart('clpie');
+  const ctx2=document.getElementById('cl-pie').getContext('2d');
+  charts['clpie']=new Chart(ctx2,{
+    type:'doughnut',
+    data:{labels:Array.from({length:k},(_,i)=>`Cluster ${i+1}`),datasets:[{data:sizes,backgroundColor:CLUSTER_COLORS.slice(0,k),borderWidth:2}]},
+    options:{responsive:true,plugins:{legend:{position:'right',labels:{font:{family:'Space Mono',size:10}}}}}
+  });
+
+  // Bar comparison
+  const metrics=['Revenue generated','Defect rates','Manufacturing costs'];
+  const clusterMeans=Array.from({length:k},(_,ci)=>
+    metrics.map(m=>{
+      const pts=RAW.filter((_,i)=>assignments[i]===ci).map(r=>+r[m]);
+      return pts.reduce((a,b)=>a+b,0)/pts.length;
+    })
+  );
+  destroyChart('clbar');
+  const ctx3=document.getElementById('cl-bar').getContext('2d');
+  charts['clbar']=new Chart(ctx3,{
+    type:'bar',
+    data:{
+      labels:metrics,
+      datasets:Array.from({length:k},(_,ci)=>({
+        label:`Cluster ${ci+1}`,
+        data:clusterMeans[ci],
+        backgroundColor:CLUSTER_COLORS[ci]+'bb',
+        borderColor:CLUSTER_COLORS[ci],borderWidth:1.5
+      }))
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{position:'top',labels:{font:{family:'Space Mono',size:10}}}},
+      scales:{y:{grid:{color:'#2a2d36'}}}
+    }
+  });
+
+  // Stats
+  let statsHtml='<h3>Cluster Profiles</h3>';
+  for(let ci=0;ci<k;ci++){
+    const pts=RAW.filter((_,i)=>assignments[i]===ci);
+    const rev=pts.map(r=>+r['Revenue generated']);
+    const def=pts.map(r=>+r['Defect rates']);
+    statsHtml+=`
+      <div class="stat-row"><span class="stat-key" style="color:${CLUSTER_COLORS[ci]}">● Cluster ${ci+1}</span><span class="stat-val">${pts.length} SKUs</span></div>
+      <div class="stat-row"><span class="stat-key">&nbsp;&nbsp;Avg Revenue</span><span class="stat-val">₹${fmtN(rev.reduce((a,b)=>a+b)/rev.length,0)}</span></div>
+      <div class="stat-row"><span class="stat-key">&nbsp;&nbsp;Avg Defect</span><span class="stat-val">${fmtN(def.reduce((a,b)=>a+b)/def.length,2)}%</span></div>
+    `;
+  }
+  document.getElementById('cl-stats').innerHTML=statsHtml;
+}
+
+// ══════════════════════════════════════════════
+// SECTION 5: PROBABILITY DISTRIBUTION
+// ══════════════════════════════════════════════
+let distVals = [];
+
+function normalPDF(x, mu, sigma) {
+  return Math.exp(-0.5*((x-mu)/sigma)**2) / (sigma*Math.sqrt(2*Math.PI));
+}
+
+function erf(x) {
+  const a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;
+  const sign=x<0?-1:1; x=Math.abs(x);
+  const t=1/(1+p*x);
+  const y=1-(((((a5*t+a4)*t+a3)*t+a2)*t+a1)*t)*Math.exp(-x*x);
+  return sign*y;
+}
+
+function normalCDF(x, mu, sigma) {
+  return 0.5*(1+erf((x-mu)/(sigma*Math.sqrt(2))));
+}
+
+function skewness(arr, mean, std) {
+  const n=arr.length;
+  return arr.reduce((a,v)=>a+((v-mean)/std)**3,0)/n;
+}
+
+function kurtosis(arr, mean, std) {
+  const n=arr.length;
+  return arr.reduce((a,v)=>a+((v-mean)/std)**4,0)/n - 3;
+}
+
+function runDistribution() {
+  const key=document.getElementById('dist-var').value;
+  const filt=document.getElementById('dist-filter').value;
+  const bins=+document.getElementById('bins-slider').value;
+  const data=filt==='all'?RAW:RAW.filter(r=>r['Product type']===filt);
+  distVals=data.map(r=>+r[key]).filter(isFinite).sort((a,b)=>a-b);
+  const s=stat(distVals);
+
+  // Metrics
+  const sk=skewness(distVals,s.mean,s.std);
+  const kurt=kurtosis(distVals,s.mean,s.std);
+  document.getElementById('dist-metrics').innerHTML=`
+    <div class="metric-chip"><div class="val">${fmtN(s.mean,1)}</div><div class="key">Mean</div></div>
+    <div class="metric-chip"><div class="val">${fmtN(s.median,1)}</div><div class="key">Median</div></div>
+    <div class="metric-chip"><div class="val">${fmtN(s.std,2)}</div><div class="key">Std Dev</div></div>
+    <div class="metric-chip"><div class="val">${fmtN(sk,2)}</div><div class="key">Skewness</div></div>
+  `;
+
+  // Histogram
+  const min=s.min, max=s.max, bw=(max-min)/bins;
+  const hist=Array(bins).fill(0);
+  distVals.forEach(v=>{
+    const bi=Math.min(bins-1,Math.floor((v-min)/bw));
+    hist[bi]++;
+  });
+  const labels=Array.from({length:bins},(_,i)=>fmtN(min+i*bw,1));
+
+  // Normal overlay
+  const normMax=Math.max(...hist);
+  const normScale=normMax / (normalPDF(s.mean,s.mean,s.std)||1);
+  const normCurve=labels.map((_,i)=>normalPDF(min+(i+0.5)*bw, s.mean, s.std)*normScale);
+
+  destroyChart('dist');
+  const ctx=document.getElementById('dist-chart').getContext('2d');
+  charts['dist']=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[
+        {label:'Frequency',data:hist,backgroundColor:'rgba(26,107,255,0.4)',borderColor:'#1a6bff',borderWidth:1.5},
+        {label:'Normal Curve',data:normCurve,type:'line',borderColor:'#e8440a',borderWidth:2.5,pointRadius:0,fill:false,tension:0.4}
+      ]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{display:true,labels:{font:{family:'Space Mono',size:10}}}},
+      scales:{
+        x:{title:{display:true,text:key},grid:{display:false}},
+        y:{title:{display:true,text:'Frequency'},grid:{color:'#2a2d36'}}
+      }
+    }
+  });
+
+  // CDF
+  const n=distVals.length;
+  const cdfData=distVals.map((v,i)=>({x:v,y:(i+1)/n}));
+  const normCDF=distVals.map(v=>({x:v,y:normalCDF(v,s.mean,s.std)}));
+
+  destroyChart('cdf');
+  const ctx2=document.getElementById('cdf-chart').getContext('2d');
+  charts['cdf']=new Chart(ctx2,{
+    type:'scatter',
+    data:{datasets:[
+      {label:'Empirical CDF',data:cdfData,borderColor:'#1a6bff',backgroundColor:'#1a6bff',pointRadius:3,showLine:true,tension:0.1},
+      {label:'Theoretical Normal CDF',data:normCDF,borderColor:'#e8440a',backgroundColor:'transparent',pointRadius:0,showLine:true,tension:0.4}
+    ]},
+    options:{responsive:true,plugins:{legend:{position:'top',labels:{font:{family:'Space Mono',size:10}}}},scales:{
+      x:{title:{display:true,text:key},grid:{color:'#2a2d36'}},
+      y:{title:{display:true,text:'Cumulative Probability'},min:0,max:1,grid:{color:'#2a2d36'}}
+    }}
+  });
+
+  // Distribution tests
+  const isNormal=Math.abs(sk)<1&&Math.abs(kurt)<1;
+  document.getElementById('dist-tests').innerHTML=`
+    <div class="stat-row"><span class="stat-key">Min</span><span class="stat-val">${fmtN(s.min,2)}</span></div>
+    <div class="stat-row"><span class="stat-key">Max</span><span class="stat-val">${fmtN(s.max,2)}</span></div>
+    <div class="stat-row"><span class="stat-key">Range</span><span class="stat-val">${fmtN(s.max-s.min,2)}</span></div>
+    <div class="stat-row"><span class="stat-key">Skewness</span><span class="stat-val" style="color:${Math.abs(sk)<0.5?'#00c896':'#f5a623'}">${fmtN(sk,3)} ${Math.abs(sk)<0.5?'≈ Symmetric':'Skewed'}</span></div>
+    <div class="stat-row"><span class="stat-key">Kurtosis</span><span class="stat-val">${fmtN(kurt,3)}</span></div>
+    <div class="stat-row"><span class="stat-key">Normality (approx)</span><span class="stat-val" style="color:${isNormal?'#00c896':'#e8440a'}">${isNormal?'✓ Normal':'✗ Non-Normal'}</span></div>
+    <div class="stat-row"><span class="stat-key">Variance</span><span class="stat-val">${fmtN(s.variance,1)}</span></div>
+    <div class="stat-row"><span class="stat-key">Coeff of Var</span><span class="stat-val">${fmtN(s.std/s.mean*100,1)}%</span></div>
+  `;
+  calcProbability();
+}
+
+function calcProbability() {
+  if(!distVals.length) return;
+  const from=parseFloat(document.getElementById('prob-from').value);
+  const to=parseFloat(document.getElementById('prob-to').value);
+  if(isNaN(from)||isNaN(to)) {document.getElementById('prob-result').textContent='—';return;}
+  const count=distVals.filter(v=>v>=from&&v<=to).length;
+  const pct=(count/distVals.length*100).toFixed(1);
+  document.getElementById('prob-result').textContent=pct+'%';
+  document.getElementById('prob-count').textContent=`${count} of ${distVals.length} values in range`;
+  const s=stat(distVals);
+  const pNorm=(normalCDF(to,s.mean,s.std)-normalCDF(from,s.mean,s.std)*100).toFixed(1);
+  document.getElementById('prob-formula').textContent=`Empirical: ${pct}%  |  Normal approx: ${Math.max(0,pNorm)}%`;
+}
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+window.addEventListener('load', ()=>{
+  drawBoxPlots();
+});
+</script>
+</body>
+</html>
